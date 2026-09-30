@@ -1,0 +1,37 @@
+---
+import * as stylex from '@stylexjs/stylex';
+import { aboutParagraphs, site } from '../content/portfolio';
+import { commonStyles } from '../styles/common.stylex';
+import { sectionStyles } from '../styles/sections.stylex';
+---
+
+<section
+  id="about"
+  aria-labelledby="about-heading"
+  {...stylex.attrs(commonStyles.section)}
+>
+  <h2 id="about-heading" {...stylex.attrs(commonStyles.sectionHeading)}>
+    ABOUT ME
+  </h2>
+  <div {...stylex.attrs(sectionStyles.aboutContent)}>
+    <div {...stylex.attrs(sectionStyles.aboutNarrative)}>
+      {aboutParagraphs.map((paragraph) => (
+        <p>{paragraph}</p>
+      ))}
+    </div>
+    <a
+      href={site.resumeHref}
+      target="_blank"
+      rel="noopener noreferrer"
+      data-analytics-event="portfolio_resume_opened"
+      data-analytics-location="about"
+      {...stylex.attrs(
+        commonStyles.link,
+        commonStyles.resumeUnderlineLink,
+        sectionStyles.aboutResume,
+      )}
+    >
+      Download Resume ↗
+    </a>
+  </div>
+</section>

@@ -1,11 +1,30 @@
 ---
-import Welcome from '../components/Welcome.astro';
+import * as stylex from '@stylexjs/stylex';
+import About from '../components/About.astro';
+import Capabilities from '../components/Capabilities.astro';
+import Contact from '../components/Contact.astro';
+import Experience from '../components/Experience.astro';
+import Masthead from '../components/Masthead.astro';
+import SelectedWork from '../components/SelectedWork.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import Skills from '../components/Skills.astro';
 import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import { commonStyles } from '../styles/common.stylex';
 ---
 
 <Layout>
-	<Welcome />
+  <div id="top" {...stylex.attrs(commonStyles.page)}>
+    <SiteHeader />
+    <main id="main-content">
+      <Masthead />
+      <Capabilities />
+      <About />
+      <Skills />
+      <Experience />
+      <SelectedWork />
+      <Contact />
+    </main>
+    <SiteFooter />
+  </div>
 </Layout>

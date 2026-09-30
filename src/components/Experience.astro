@@ -1,0 +1,31 @@
+---
+import * as stylex from '@stylexjs/stylex';
+import { experience } from '../content/portfolio';
+import { commonStyles } from '../styles/common.stylex';
+import { sectionStyles } from '../styles/sections.stylex';
+---
+
+<section
+  id="experience"
+  aria-labelledby="experience-heading"
+  {...stylex.attrs(commonStyles.section)}
+>
+  <h2 id="experience-heading" {...stylex.attrs(commonStyles.sectionHeading)}>
+    EXPERIENCE
+  </h2>
+  <ol {...stylex.attrs(sectionStyles.experienceList)}>
+    {experience.map((item, index) => (
+      <li
+        {...stylex.attrs(
+          sectionStyles.experienceItem,
+          index < experience.length - 1 && sectionStyles.experienceBorder,
+        )}
+      >
+        <h3 {...stylex.attrs(sectionStyles.experienceTitle)}>{item.title}</h3>
+        <p {...stylex.attrs(sectionStyles.experienceDescription)}>
+          {item.description}
+        </p>
+      </li>
+    ))}
+  </ol>
+</section>

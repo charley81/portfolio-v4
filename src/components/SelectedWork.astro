@@ -1,0 +1,65 @@
+---
+import * as stylex from '@stylexjs/stylex';
+import { projects } from '../content/portfolio';
+import { commonStyles } from '../styles/common.stylex';
+import { sectionStyles } from '../styles/sections.stylex';
+---
+
+<section
+  id="work"
+  aria-labelledby="work-heading"
+  {...stylex.attrs(commonStyles.section)}
+>
+  <h2 id="work-heading" {...stylex.attrs(commonStyles.sectionHeading)}>
+    RECENT WORK
+  </h2>
+  <div {...stylex.attrs(sectionStyles.projects)}>
+    {projects.map((project, index) => (
+      <>
+        {index > 0 && (
+          <div
+            aria-hidden="true"
+            {...stylex.attrs(sectionStyles.projectDivider)}
+          ></div>
+        )}
+        <article {...stylex.attrs(sectionStyles.project)}>
+          <p {...stylex.attrs(sectionStyles.projectCategory)}>
+            {project.category}
+          </p>
+          <a
+            href={project.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`${project.title} project (opens in a new tab)`}
+            data-analytics-event="portfolio_project_opened"
+            data-analytics-project={project.id}
+            {...stylex.attrs(sectionStyles.projectTitleLink)}
+          >
+            <h3 {...stylex.attrs(sectionStyles.projectTitle)}>
+              {project.title}
+            </h3>
+            <picture>
+              <source
+                media="(min-width: 900px)"
+                srcset="/assets/arrow-up-right-desktop.svg"
+              />
+              <img
+                src="/assets/arrow-up-right-mobile.svg"
+                width="20"
+                height="20"
+                alt=""
+                {...stylex.attrs(sectionStyles.projectArrow)}
+              />
+            </picture>
+          </a>
+          <p {...stylex.attrs(sectionStyles.projectDescription)}>
+            {project.description}
+          </p>
+          <p {...stylex.attrs(sectionStyles.projectTechnologies)}>
+            {project.technologies}
+          </p>
+        </article>
+      </>
+    ))}
+  </div>
+</section>

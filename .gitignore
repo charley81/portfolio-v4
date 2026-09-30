@@ -15,7 +15,14 @@ pnpm-debug.log*
 
 # environment variables
 .env
-.env.production
+.env.*
+!.env.example
+
+# local platform and test artifacts
+.netlify/
+.lighthouseci/
+playwright-report/
+test-results/
 
 # macOS-specific files
 .DS_Store

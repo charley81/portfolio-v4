@@ -1,0 +1,109 @@
+---
+import * as stylex from '@stylexjs/stylex';
+import { masthead, site } from '../content/portfolio';
+import { commonStyles } from '../styles/common.stylex';
+import { mastheadStyles } from '../styles/masthead.stylex';
+---
+
+<section aria-labelledby="page-title" {...stylex.attrs(mastheadStyles.section)}>
+  <div {...stylex.attrs(mastheadStyles.main)}>
+    <div {...stylex.attrs(mastheadStyles.intro)}>
+      <div {...stylex.attrs(mastheadStyles.location)}>
+        <p {...stylex.attrs(mastheadStyles.author)}>{site.author}</p>
+        <p {...stylex.attrs(mastheadStyles.secondary)}>{site.location}</p>
+      </div>
+
+      <div {...stylex.attrs(mastheadStyles.mid)}>
+        <h1 id="page-title" {...stylex.attrs(mastheadStyles.heading)}>
+          {masthead.heading}
+        </h1>
+        <p {...stylex.attrs(mastheadStyles.description)}>
+          {masthead.description}
+        </p>
+      </div>
+
+      <div {...stylex.attrs(mastheadStyles.footer)}>
+        <div {...stylex.attrs(mastheadStyles.actionList)}>
+          <a
+            href="#work"
+            {...stylex.attrs(commonStyles.link, commonStyles.underlineLink)}
+          >
+            View selected work ↓
+          </a>
+          <a
+            href={site.resumeHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-analytics-event="portfolio_resume_opened"
+            data-analytics-location="masthead"
+            {...stylex.attrs(commonStyles.link, commonStyles.underlineLink)}
+          >
+            View resume ↗
+          </a>
+        </div>
+
+        <div {...stylex.attrs(mastheadStyles.availability)}>
+          <picture>
+            <source
+              media="(min-width: 900px)"
+              srcset="/assets/status-dot-desktop.svg"
+            />
+            <img
+              src="/assets/status-dot-mobile.svg"
+              width="10"
+              height="10"
+              alt=""
+              {...stylex.attrs(mastheadStyles.statusIcon)}
+            />
+          </picture>
+          <p {...stylex.attrs(mastheadStyles.availabilityText)}>
+            {site.availability}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div {...stylex.attrs(mastheadStyles.sidebar)}>
+      <p {...stylex.attrs(mastheadStyles.sidebarLabel)}>Connect</p>
+      <ul {...stylex.attrs(mastheadStyles.socialList)}>
+        <li>
+          <a
+            href={site.linkedInHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-analytics-event="portfolio_contact_method_clicked"
+            data-analytics-method="linkedin"
+            data-analytics-location="masthead"
+            {...stylex.attrs(commonStyles.link)}
+          >
+            LinkedIn ↗
+          </a>
+        </li>
+        <li>
+          <a
+            href={site.githubHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-analytics-event="portfolio_contact_method_clicked"
+            data-analytics-method="github"
+            data-analytics-location="masthead"
+            {...stylex.attrs(commonStyles.link)}
+          >
+            GitHub ↗
+          </a>
+        </li>
+        <li>
+          <a
+            href={site.emailHref}
+            data-analytics-event="portfolio_contact_method_clicked"
+            data-analytics-method="email"
+            data-analytics-location="masthead"
+            {...stylex.attrs(commonStyles.link)}
+          >
+            Email ↗
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>

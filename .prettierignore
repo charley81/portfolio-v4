@@ -1,0 +1,12 @@
+.astro/
+.lighthouseci/
+.netlify/
+dist/
+node_modules/
+playwright-report/
+test-results/
+pnpm-lock.yaml
+AGENTS.md
+docs/plans/
+public/**/*.ico
+public/**/*.pdf

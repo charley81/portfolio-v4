@@ -1,23 +1,65 @@
+---
+import '@fontsource-variable/instrument-sans';
+import '@fontsource/space-mono/400.css';
+import '@fontsource/space-mono/700.css';
+import * as stylex from '@stylexjs/stylex';
+import Analytics from '../components/Analytics.astro';
+import { site } from '../content/portfolio';
+import '../styles/global.css';
+import { layoutStyles } from '../styles/layout.stylex';
+
+const posthogKey = import.meta.env.PUBLIC_POSTHOG_KEY?.trim();
+const posthogHost = import.meta.env.PUBLIC_POSTHOG_HOST?.trim();
+const analyticsEnabled =
+  import.meta.env.PROD &&
+  import.meta.env.CONTEXT === 'production' &&
+  Boolean(posthogKey) &&
+  Boolean(posthogHost);
+---
+
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
-	</head>
-	<body>
-		<slot />
-	</body>
-</html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={site.description} />
+    <meta name="author" content={site.author} />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#000305" />
+    <meta name="color-scheme" content="dark" />
 
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
-</style>
+    <link rel="canonical" href={site.canonicalUrl} />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={site.title} />
+    <meta property="og:description" content={site.description} />
+    <meta property="og:url" content={site.canonicalUrl} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={site.title} />
+    <meta name="twitter:description" content={site.description} />
+
+    <meta name="generator" content={Astro.generator} />
+    <title>{site.title}</title>
+
+    {import.meta.env.DEV && (
+      <link rel="stylesheet" href="/virtual:stylex.css" />
+    )}
+    {import.meta.env.DEV && (
+      <script
+        is:inline
+        type="module"
+        src="/@id/virtual:stylex:runtime"
+      ></script>
+    )}
+  </head>
+  <body>
+    <a href="#main-content" {...stylex.attrs(layoutStyles.skipLink)}>
+      Skip to main content
+    </a>
+    <slot />
+    {analyticsEnabled && posthogKey && posthogHost && (
+      <Analytics posthogKey={posthogKey} posthogHost={posthogHost} />
+    )}
+  </body>
+</html>

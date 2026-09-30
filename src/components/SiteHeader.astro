@@ -1,0 +1,183 @@
+---
+import * as stylex from '@stylexjs/stylex';
+import { navigation, site } from '../content/portfolio';
+import { commonStyles } from '../styles/common.stylex';
+import { headerStyles } from '../styles/header.stylex';
+---
+
+<header {...stylex.attrs(headerStyles.header)}>
+  <a href="#top" {...stylex.attrs(headerStyles.brand, commonStyles.link)}>
+    {site.brand}
+  </a>
+
+  <div {...stylex.attrs(headerStyles.desktopGroup)}>
+    <nav aria-label="Primary navigation">
+      <ul {...stylex.attrs(headerStyles.desktopNavList)}>
+        {navigation.map((item) => (
+          <li>
+            <a
+              href={`#${item.id}`}
+              data-analytics-event="portfolio_navigation_clicked"
+              data-analytics-destination={item.id}
+              data-analytics-location="desktop_header"
+              {...stylex.attrs(headerStyles.desktopNavLink)}
+            >
+              {item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+    <a
+      href={site.resumeHref}
+      target="_blank"
+      rel="noopener noreferrer"
+      data-analytics-event="portfolio_resume_opened"
+      data-analytics-location="desktop_header"
+      {...stylex.attrs(commonStyles.buttonLink)}
+    >
+      Resume ↗
+    </a>
+  </div>
+
+  <button
+    type="button"
+    aria-label="Open navigation menu"
+    aria-controls="mobile-navigation-dialog"
+    aria-expanded="false"
+    data-menu-open
+    {...stylex.attrs(headerStyles.mobileButton)}
+  >
+    <img src="/assets/menu.svg" width="18" height="18" alt="" />
+  </button>
+
+  <dialog
+    id="mobile-navigation-dialog"
+    aria-label="Mobile navigation"
+    {...stylex.attrs(headerStyles.dialog)}
+  >
+    <div {...stylex.attrs(headerStyles.menuSurface)}>
+      <div {...stylex.attrs(headerStyles.menuTop)}>
+        <div {...stylex.attrs(headerStyles.menuHeader)}>
+          <a
+            href="#top"
+            data-menu-close
+            {...stylex.attrs(headerStyles.brand, commonStyles.link)}
+          >
+            {site.brand}
+          </a>
+          <button
+            type="button"
+            aria-label="Close navigation menu"
+            data-menu-close
+            {...stylex.attrs(headerStyles.mobileButton)}
+          >
+            <img src="/assets/close.svg" width="14" height="14" alt="" />
+          </button>
+        </div>
+
+        <nav
+          aria-label="Mobile navigation"
+          {...stylex.attrs(headerStyles.mobileNavigation)}
+        >
+          <ol {...stylex.attrs(headerStyles.mobileNavList)}>
+            {navigation.map((item) => (
+              <li>
+                <a
+                  href={`#${item.id}`}
+                  data-menu-close
+                  data-analytics-event="portfolio_navigation_clicked"
+                  data-analytics-destination={item.id}
+                  data-analytics-location="mobile_menu"
+                  {...stylex.attrs(headerStyles.mobileNavLink)}
+                >
+                  <span {...stylex.attrs(headerStyles.mobileNavIndex)}>
+                    {item.index}
+                  </span>
+                  <span {...stylex.attrs(headerStyles.mobileNavLabel)}>
+                    {item.label}
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      </div>
+
+      <div {...stylex.attrs(headerStyles.menuFooter)}>
+        <div
+          aria-hidden="true"
+          {...stylex.attrs(headerStyles.menuDivider)}
+        ></div>
+        <a
+          href={site.resumeHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-analytics-event="portfolio_resume_opened"
+          data-analytics-location="mobile_menu"
+          {...stylex.attrs(commonStyles.buttonLink, headerStyles.menuResume)}
+        >
+          Resume ↗
+        </a>
+
+        <div {...stylex.attrs(headerStyles.connectBlock)}>
+          <p {...stylex.attrs(headerStyles.connectLabel)}>Connect</p>
+          <ul {...stylex.attrs(headerStyles.socialList)}>
+            <li>
+              <a
+                href={site.linkedInHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-analytics-event="portfolio_contact_method_clicked"
+                data-analytics-method="linkedin"
+                data-analytics-location="mobile_menu"
+                {...stylex.attrs(commonStyles.link)}
+              >
+                LinkedIn ↗
+              </a>
+            </li>
+            <li>
+              <a
+                href={site.githubHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-analytics-event="portfolio_contact_method_clicked"
+                data-analytics-method="github"
+                data-analytics-location="mobile_menu"
+                {...stylex.attrs(commonStyles.link)}
+              >
+                GitHub ↗
+              </a>
+            </li>
+            <li>
+              <a
+                href={site.emailHref}
+                data-analytics-event="portfolio_contact_method_clicked"
+                data-analytics-method="email"
+                data-analytics-location="mobile_menu"
+                {...stylex.attrs(commonStyles.link)}
+              >
+                Email ↗
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div {...stylex.attrs(headerStyles.availability)}>
+          <img
+            src="/assets/status-dot-mobile.svg"
+            width="10"
+            height="10"
+            alt=""
+            {...stylex.attrs(headerStyles.availabilityIcon)}
+          />
+          <p {...stylex.attrs(headerStyles.availabilityText)}>
+            {site.menuAvailability}
+          </p>
+        </div>
+      </div>
+    </div>
+  </dialog>
+</header>
+
+<script src="../scripts/mobile-menu.ts"></script>

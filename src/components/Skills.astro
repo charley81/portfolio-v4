@@ -1,0 +1,29 @@
+---
+import * as stylex from '@stylexjs/stylex';
+import { skills } from '../content/portfolio';
+import { commonStyles } from '../styles/common.stylex';
+import { sectionStyles } from '../styles/sections.stylex';
+---
+
+<section
+  id="skills"
+  aria-labelledby="skills-heading"
+  {...stylex.attrs(commonStyles.section)}
+>
+  <h2 id="skills-heading" {...stylex.attrs(commonStyles.sectionHeading)}>
+    SKILLS
+  </h2>
+  <dl {...stylex.attrs(sectionStyles.skillsList)}>
+    {skills.map((skill, index) => (
+      <div
+        {...stylex.attrs(
+          sectionStyles.skillRow,
+          index > 0 && sectionStyles.skillRowBorder,
+        )}
+      >
+        <dt {...stylex.attrs(sectionStyles.skillCategory)}>{skill.category}</dt>
+        <dd {...stylex.attrs(sectionStyles.skillTools)}>{skill.tools}</dd>
+      </div>
+    ))}
+  </dl>
+</section>

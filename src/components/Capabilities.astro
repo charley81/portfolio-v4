@@ -1,0 +1,39 @@
+---
+import * as stylex from '@stylexjs/stylex';
+import { capabilities } from '../content/portfolio';
+import { commonStyles } from '../styles/common.stylex';
+import { sectionStyles } from '../styles/sections.stylex';
+---
+
+<section
+  id="capabilities"
+  aria-labelledby="capabilities-heading"
+  {...stylex.attrs(commonStyles.section)}
+>
+  <h2 id="capabilities-heading" {...stylex.attrs(commonStyles.sectionHeading)}>
+    WHAT I DO
+  </h2>
+  <ol {...stylex.attrs(sectionStyles.capabilitiesList)}>
+    {capabilities.map((capability, index) => (
+      <li
+        {...stylex.attrs(
+          sectionStyles.capabilityRow,
+          index < capabilities.length - 1 && sectionStyles.rowBorder,
+        )}
+      >
+        <span
+          aria-hidden="true"
+          {...stylex.attrs(sectionStyles.capabilityIndex)}
+        >
+          {capability.index}
+        </span>
+        <h3 {...stylex.attrs(sectionStyles.capabilityTitle)}>
+          {capability.title}
+        </h3>
+        <p {...stylex.attrs(sectionStyles.capabilityDescription)}>
+          {capability.description}
+        </p>
+      </li>
+    ))}
+  </ol>
+</section>

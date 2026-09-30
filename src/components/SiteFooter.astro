@@ -1,0 +1,12 @@
+---
+import * as stylex from '@stylexjs/stylex';
+import { commonStyles } from '../styles/common.stylex';
+import { footerStyles } from '../styles/footer.stylex';
+---
+
+<footer {...stylex.attrs(footerStyles.footer)}>
+  <p {...stylex.attrs(footerStyles.copyright)}>© 2025 Christopher Harley</p>
+  <a href="#top" {...stylex.attrs(commonStyles.link, footerStyles.backToTop)}>
+    Back to top ↑
+  </a>
+</footer>

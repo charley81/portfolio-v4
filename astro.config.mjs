@@ -1,5 +1,16 @@
 // @ts-check
+import stylex from '@stylexjs/unplugin';
 import { defineConfig } from 'astro/config';
 
-// https://astro.build/config
-export default defineConfig({});
+export default defineConfig({
+  output: 'static',
+  site: 'https://christopherharley.com',
+  vite: {
+    plugins: [
+      stylex.vite({
+        devMode: 'full',
+        useCSSLayers: true,
+      }),
+    ],
+  },
+});

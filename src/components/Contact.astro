@@ -1,0 +1,181 @@
+---
+import * as stylex from '@stylexjs/stylex';
+import { contact, site } from '../content/portfolio';
+import { commonStyles } from '../styles/common.stylex';
+import { contactStyles } from '../styles/contact.stylex';
+---
+
+<section
+  id="contact"
+  aria-labelledby="contact-section-heading"
+  {...stylex.attrs(commonStyles.section)}
+>
+  <h2
+    id="contact-section-heading"
+    {...stylex.attrs(commonStyles.sectionHeading)}
+  >
+    CONTACT
+  </h2>
+  <div {...stylex.attrs(contactStyles.content)}>
+    <div {...stylex.attrs(contactStyles.columns)}>
+      <div {...stylex.attrs(contactStyles.intro)}>
+        <h3 {...stylex.attrs(contactStyles.heading)}>{contact.heading}</h3>
+        <p {...stylex.attrs(contactStyles.description)}>
+          {contact.description}
+        </p>
+        <div {...stylex.attrs(contactStyles.actions)}>
+          <a
+            href={site.emailHref}
+            data-analytics-event="portfolio_contact_method_clicked"
+            data-analytics-method="email"
+            data-analytics-location="contact"
+            {...stylex.attrs(commonStyles.link, contactStyles.emailLink)}
+          >
+            Email Christopher ↗
+          </a>
+          <ul {...stylex.attrs(contactStyles.secondaryLinks)}>
+            <li>
+              <a
+                href={site.linkedInHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-analytics-event="portfolio_contact_method_clicked"
+                data-analytics-method="linkedin"
+                data-analytics-location="contact"
+                {...stylex.attrs(commonStyles.link)}
+              >
+                LinkedIn ↗
+              </a>
+            </li>
+            <li>
+              <a
+                href={site.githubHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-analytics-event="portfolio_contact_method_clicked"
+                data-analytics-method="github"
+                data-analytics-location="contact"
+                {...stylex.attrs(commonStyles.link)}
+              >
+                GitHub ↗
+              </a>
+            </li>
+            <li>
+              <a
+                href={site.resumeHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-analytics-event="portfolio_resume_opened"
+                data-analytics-location="contact"
+                {...stylex.attrs(commonStyles.link)}
+              >
+                Resume ↗
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <form
+        name="contact"
+        method="POST"
+        action="/"
+        data-netlify="true"
+        netlify-honeypot="bot-field"
+        aria-describedby="contact-form-status"
+        data-contact-form
+        {...stylex.attrs(contactStyles.form)}
+      >
+        <input type="hidden" name="form-name" value="contact" />
+        <p class="visually-hidden">
+          <label>
+            Do not fill this out if you are human:
+            <input name="bot-field" tabindex="-1" autocomplete="off" />
+          </label>
+        </p>
+
+        <div {...stylex.attrs(contactStyles.field)}>
+          <label for="contact-name" {...stylex.attrs(contactStyles.label)}>
+            Name
+          </label>
+          <input
+            id="contact-name"
+            name="name"
+            type="text"
+            autocomplete="name"
+            placeholder="Your name"
+            required
+            {...stylex.attrs(contactStyles.control, contactStyles.nameControl)}
+          />
+        </div>
+
+        <div {...stylex.attrs(contactStyles.field)}>
+          <label for="contact-email" {...stylex.attrs(contactStyles.label)}>
+            Email
+          </label>
+          <input
+            id="contact-email"
+            name="email"
+            type="email"
+            inputmode="email"
+            autocomplete="email"
+            placeholder="you@company.com"
+            required
+            {...stylex.attrs(contactStyles.control)}
+          />
+        </div>
+
+        <div {...stylex.attrs(contactStyles.field)}>
+          <label for="contact-message" {...stylex.attrs(contactStyles.label)}>
+            Message
+          </label>
+          <textarea
+            id="contact-message"
+            name="message"
+            placeholder="Tell me about your project"
+            required
+            {...stylex.attrs(contactStyles.control, contactStyles.textarea)}
+          ></textarea>
+        </div>
+
+        <button
+          type="submit"
+          data-submit-button
+          {...stylex.attrs(commonStyles.primaryButton)}
+        >
+          <span data-submit-label>Send message →</span>
+        </button>
+
+        <div
+          id="contact-form-status"
+          data-form-status
+          aria-live="polite"
+          aria-atomic="true"
+          hidden
+        >
+          <p
+            data-form-success
+            hidden
+            {...stylex.attrs(contactStyles.formStatus)}
+          >
+            {contact.successMessage}
+          </p>
+          <p
+            data-form-failure
+            role="alert"
+            hidden
+            {...stylex.attrs(
+              contactStyles.formStatus,
+              contactStyles.formStatusFailure,
+            )}
+          >
+            Something went wrong. Please try again or email me directly at{' '}
+            <a href={site.emailHref}>{site.email}</a>.
+          </p>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<script src="../scripts/contact-form.ts"></script>

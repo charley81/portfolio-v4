@@ -1,46 +1,67 @@
-# Astro Starter Kit: Basics
+# Christopher Harley Portfolio
+
+A static, one-page portfolio built with Astro, strict TypeScript, and StyleX. The implementation follows the approved desktop and mobile Figma frames and uses only small native browser scripts for the mobile menu, contact form enhancement, and gated analytics.
+
+## Requirements
+
+- Node.js 22.14.0 (see `.nvmrc`)
+- pnpm 10.32.1
+
+## Setup
 
 ```sh
-pnpm create astro@latest -- --template basics
+pnpm install --frozen-lockfile
+cp .env.example .env
+pnpm dev --background
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Use `pnpm astro dev status`, `pnpm astro dev logs`, and `pnpm astro dev stop` to manage the background development server.
 
-## 🚀 Project Structure
+PostHog is optional. Leave both values blank during local development:
 
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
+```ini
+PUBLIC_POSTHOG_KEY=
+PUBLIC_POSTHOG_HOST=
 ```
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+Analytics is included only when Astro is building for production, Netlify sets `CONTEXT=production`, and both public PostHog values are present. Development and deploy previews remain silent.
 
-## 🧞 Commands
+## Commands
 
-All commands are run from the root of the project, from a terminal:
+| Command               | Purpose                                                   |
+| --------------------- | --------------------------------------------------------- |
+| `pnpm dev`            | Start Astro's development server                          |
+| `pnpm build`          | Generate the static site in `dist/`                       |
+| `pnpm preview`        | Preview the production build                              |
+| `pnpm format:check`   | Check formatting                                          |
+| `pnpm lint`           | Run ESLint                                                |
+| `pnpm check`          | Run Astro and TypeScript diagnostics                      |
+| `pnpm test:e2e`       | Run portfolio behavior tests                              |
+| `pnpm test:a11y`      | Run axe accessibility tests                               |
+| `pnpm test:analytics` | Verify deploy-preview and production analytics boundaries |
+| `pnpm lighthouse`     | Run Lighthouse CI against `dist/`                         |
+| `pnpm verify`         | Run the complete local verification sequence              |
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `pnpm install`             | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
+Lighthouse targets 95+ Performance and 100 Accessibility and Best Practices. Before domain cutover, the intentional `noindex` policy lowers the SEO category to 0.69 solely because the page is blocked from indexing; that audit remains a warning until cutover authorization removes the block.
 
-## 👀 Want to learn more?
+Install Playwright's Chromium build once before browser tests:
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+```sh
+pnpm exec playwright install chromium
+```
+
+## Forms
+
+The contact form uses Netlify Forms with a honeypot. JavaScript progressively enhances submission with inline pending, success, and failure feedback; native form submission remains available when JavaScript is disabled. Configure form notification delivery to `chrisharley81@gmail.com` in the Netlify site controls.
+
+## Deployment safety
+
+`netlify.toml` publishes the static `dist/` directory. The review target is the separate Netlify site at `https://statuesque-kangaroo-16f795.netlify.app/`.
+
+The site intentionally remains `noindex` in both metadata and `public/robots.txt`. Do not attach `christopherharley.com`, change DNS, remove the noindex policy, or alter the current live project without a separate, explicit cutover approval.
+
+A production deployment requires separate approval and can then use:
+
+```sh
+pnpm netlify:deploy:prod
+```

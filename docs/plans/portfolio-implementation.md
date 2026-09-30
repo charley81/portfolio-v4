@@ -1,15 +1,15 @@
 # Portfolio Implementation Plan
 
-**Status:** Awaiting approval and blocking inputs  
-**Scope:** One complete, production-ready portfolio page at `/`  
-**Approved design:** Figma page `final`, frame `christopher-harley-portfolio` (`164:3`)  
+**Status:** Approved and implemented locally; awaiting separate deployment approval and PostHog environment setup
+**Scope:** One complete, production-ready portfolio page at `/`
+**Approved design:** Figma page `final`, frame `christopher-harley-portfolio` (`164:3`)
 **Plan destination:** This file is the only implementation plan for the page. No section-level specs or plans will be created.
 
 ## 1. Goal and user-visible outcome
 
 Replace the Astro starter with Christopher Harley's complete one-page portfolio, matching the approved Figma frame while remaining usable from 320px through wide desktop, meeting WCAG 2.2 AA, generating static output, and shipping minimal browser JavaScript. The page will include semantic navigation, masthead, capabilities, about, skills, experience, selected work, contact form, and footer; production-only, privacy-conscious PostHog tracking; and a repeatable Netlify delivery pipeline.
 
-The first stable product checkpoint will be deployed to a **new, unaliased Netlify production URL** for review. The existing `christopherharley.com` site, DNS, domain assignment, and current production project will remain untouched until a separately approved cutover.
+The first stable product checkpoint will be deployed to the supplied, unaliased Netlify production URL (`https://statuesque-kangaroo-16f795.netlify.app/`) for review. The existing `christopherharley.com` site, DNS, domain assignment, and current production project will remain untouched until a separately approved cutover.
 
 ## 2. Sources of truth and precedence
 
@@ -24,12 +24,10 @@ Implementation must not invent copy, URLs, project facts, assets, form behavior,
 
 ### Current repository state
 
-- Git branch: `master` at `71a6cca` (`Initial commit from Astro`).
-- No Git remote is configured.
-- Pre-existing user changes that must be preserved:
-  - Modified `AGENTS.md`.
-  - Untracked empty `docs/plan.md`.
-  - Untracked empty `docs/specs/` directory.
+- Git branch: `main` at `7aec50e` (`init`), tracking `origin/main`.
+- `origin` is configured as `https://github.com/charley81/portfolio-v4.git` for fetch and push.
+- Local history includes the original Astro commit `71a6cca`; the previously modified `AGENTS.md`, empty `docs/plan.md`, and initial implementation plan are committed in `7aec50e`.
+- The approved implementation is now present in the working tree together with the user-supplied `public/favicon.ico` and `public/resume.pdf`; no commit or deployment has been made.
 - Package manager: pnpm, established by `pnpm-lock.yaml` v9 and `pnpm-workspace.yaml`; `package.json` has no `packageManager` field.
 - Local tools observed:
   - Node `v24.19.0`.
@@ -47,6 +45,8 @@ Implementation must not invent copy, URLs, project facts, assets, form behavior,
 - `@astrojs/check` and TypeScript are not installed; `pnpm astro check --help` stopped at Astro's install prompt and no dependency was added.
 - No `netlify.toml`, `.netlify/state.json`, Git-connected deployment configuration, or Netlify site link exists.
 - The globally installed `netlify` wrapper is broken because it references a removed Node `22.14.0` executable. Deployment must use a project-pinned CLI or the Netlify UI/Git integration instead of that wrapper.
+- The supplied separate Netlify project is `statuesque-kangaroo-16f795`, currently serving the Astro starter at `https://statuesque-kangaroo-16f795.netlify.app/` with HTTP 200 and title `Astro Basics`.
+- `https://christopherharley.com/` independently returns HTTP 200 with title `Christopher Harley - Design Engineer`; its response differs from the supplied Netlify project, confirming the review site is currently separate from the live domain.
 - No `.env.example` exists. `.gitignore` ignores `.env` and `.env.production`, but not all local environment variants or `.netlify/`.
 
 ### Baseline verification actually completed
@@ -60,14 +60,24 @@ Implementation must not invent copy, URLs, project facts, assets, form behavior,
 
 The Figma desktop MCP was used for metadata, design context, variables, screenshots, and recursive motion inspection.
 
-### Approved frame
+### Approved frames
 
-- One approved desktop frame is present on page `final`:
+- Desktop frame on page `final`:
   - Node: `164:3`
-  - Size: `1440 × 5201`
+  - Size after the About-copy update: `1440 × 5203`
   - Background: `#000305`
-- No mobile, tablet, or wide-desktop frames/variants are present on the approved page.
-- Recursive motion inspection returned no animated nodes.
+- Exact mobile page frame on the same page:
+  - Node: `164:162`
+  - Name: `christopher-harley-portfolio-mobile-exact`
+  - Size: `390 × 5245`
+  - Background: `#000305`
+- Exact mobile navigation open state:
+  - Node: `141:4`
+  - Name: `christopher-harley-mobile-nav-open`
+  - Size: `390 × 844`
+  - Full-height dark surface with close control, six numbered navigation links, full-width resume action, social links, and availability status.
+- No separate tablet or wide-desktop frame is present. Responsive behavior between the exact 390px and 1440px anchors will be content-driven and verified at 768, 1024, and 1920px without changing their established hierarchy.
+- Recursive motion inspection returned no animated nodes for the desktop page, mobile page, or open-menu state.
 
 ### Page structure
 
@@ -81,7 +91,7 @@ The Figma desktop MCP was used for metadata, design context, variables, screensh
 8. Contact and form (`164:130`).
 9. Footer (`164:158`).
 
-The 1440px layout uses 100px side/section padding, a 1240px content width, repeated 40px section-heading gaps, 24–64px internal spacing, and horizontal rows that will need deliberate narrow-screen reflow.
+The 1440px layout uses 100px side/section padding, a 1240px content width, repeated 40px section-heading gaps, and 24–64px internal spacing. The 390px frame defines the narrow-screen reflow directly: 20px horizontal gutters, 48px section padding, 32px section-heading gaps, stacked capability/skill/contact layouts, 12–15px body/utility type, a 36px masthead heading, and a 32px menu control.
 
 ### Design tokens and typography
 
@@ -102,24 +112,35 @@ Typography:
 
 ### Design assets
 
-Two visible SVG assets are supplied through the Figma asset server and must be copied locally during implementation, without redrawing or substitution:
+Visible SVG assets are supplied through the Figma asset server and must be copied locally during implementation, without redrawing or substitution:
 
-- Availability status dot: `1d275cac7e2f0d65c92dff66c0b56ce8d2b81530.svg`.
-- Project arrow-up-right: `cb9d4e8bab3eee484dd1b6b4602ebd8081cd9b6d.svg`.
+- Desktop availability status dot: `1d275cac7e2f0d65c92dff66c0b56ce8d2b81530.svg`.
+- Desktop project arrow-up-right: `cb9d4e8bab3eee484dd1b6b4602ebd8081cd9b6d.svg`.
+- Mobile menu icon: `e6000e9fa2ab538cc9117556d4eec79cb6356ef2.svg`.
+- Mobile close icon: `defb47147efab24b45e6fdc556d0f803c46817d2.svg`.
+- Mobile availability status dot: `c33c4693b01f19a9cf346d67672f8cd3a1313e74.svg`.
+- Mobile project arrow-up-right: `0776b8f1e734eb0c34a11068fe62611b99f12d38.svg`.
 
-The full-page screenshot is a visual reference only and must never be embedded as an implementation asset.
+No icon library is needed: the exact Figma SVGs are the approved source and avoid an unnecessary dependency. The full-page screenshots are visual references only and must never be embedded as implementation assets.
 
 ### Design/content issues discovered
 
-- About nodes `164:61`, `164:62`, and `164:63` contain the exact same long paragraph. This appears to be unresolved or duplicated copy.
-- Visible labels exist for LinkedIn, GitHub, email, resume, and three projects, but Figma provides no destination URLs.
-- No resume PDF, favicon, social-sharing image, or canonical SEO copy is supplied.
-- The form's submission service, recipient, success state, failure state, and spam strategy are not defined.
-- Several strings use a hyphen where an em dash may have been intended (for example, `experiences-from`, `service-experience`, and `opportunities-including`). They will not be silently corrected.
-- The footer is fixed to `© 2025 Christopher Harley`; whether it should remain literal or become current-year output is unresolved.
-- The Download Resume underline uses `#3157FF` in generated design context while the shared `primary` variable is `#1E90FF`; this requires confirmation or an explicitly documented one-off token.
-- `#425261` against `#000305` measures approximately `2.57:1`. It is acceptable for decorative rules but is below the WCAG 2.2 AA `3:1` non-text contrast requirement when used as an essential form-control boundary. The name input currently uses that border color and will require an accessible adjustment or additional affordance.
-- The desktop frame contains no hover, focus, active, form validation, success/error, or mobile navigation states. Those states must be defined from accessibility requirements and approved behavior, not guessed.
+- About nodes `164:61`, `164:62`, and `164:63` now contain distinct, completed copy; this update was verified through Figma design context.
+- Approved contact destinations supplied by the user:
+  - LinkedIn: `https://www.linkedin.com/in/charley81`
+  - GitHub: `https://github.com/charley81`
+  - Email: `chrisharley81@gmail.com`
+- Approved project scope is temporarily limited to two entries:
+  - BASSMENT: `https://clubbassment.com/`
+  - Marsh & Ember: `https://marshandember.netlify.app/`
+- Cape & Canopy and Merge Konflict are both out of scope. Omitting the first Figma project is an explicitly approved content deviation until a future third project is ready.
+- The resume exists at `public/resume.pdf`; it is a non-empty two-page PDF.
+- The approved favicon is present at `public/favicon.ico`; it contains 16px, 32px, and 48px CH-on-blue variants and was visually verified. The existing starter `public/favicon.svg` must be removed or unreferenced so it cannot override the approved icon.
+- A social-sharing image is explicitly deferred until a later update. Initial Open Graph/Twitter metadata will omit image tags rather than invent or substitute an asset.
+- Netlify Forms is approved with recipient `chrisharley81@gmail.com`, honeypot spam protection, success message `Thanks for reaching out, I’ll be in touch immediately`, and failure message `Something went wrong. Please try again or email me directly at chrisharley81@gmail.com.`
+- The user approved retaining Figma's visible punctuation, literal `© 2025 Christopher Harley`, `#3157FF` Download Resume underline, and form-control colors exactly as designed. No resting-state contrast color substitution is approved; required focus visibility will be verified without changing those resting colors.
+- The open mobile menu is fully specified by node `141:4`. Implement it as a native modal dialog matching the 390×844 design, with the exact Figma menu/close assets, focus containment, Escape dismissal, focus restoration, background scroll lock, and dismissal after activating a navigation link.
+- The frames contain no hover, focus, active, form validation, or success/error states. Those states will use the established Figma tokens, semantic HTML, and WCAG behavior without altering approved resting-state colors.
 
 ## 5. Constraints and non-goals
 
@@ -165,45 +186,58 @@ The full-page screenshot is a visual reference only and must never be embedded a
 - Enable CSS layers only after verifying the resulting Astro/StyleX cascade and development behavior.
 - Do not add Tailwind or preserve starter component CSS.
 
-### Responsive behavior proposal
+### Responsive behavior
 
-Because Figma provides only a 1440px frame, the following is a proposed translation and is an approval item:
-
-- Center a maximum 1440px page canvas on wide screens; preserve the 1240px desktop content width and use fluid `clamp()` gutters below 1440px.
-- Keep all primary navigation destinations visible without a JavaScript hamburger: progressively wrap/stack the header and navigation at narrower widths.
-- Reflow masthead sidebar content beneath the introduction.
-- Convert capabilities and skills rows from multi-column to stacked content while preserving index/category order.
-- Stack contact columns and make controls full width.
+- Treat the 390px mobile frame and 1440px desktop frame as exact visual anchors.
+- Center a maximum 1440px page canvas on wide screens; preserve the 1240px desktop content width and interpolate gutters/layout only between the two approved anchors.
+- At narrow widths, follow Figma's 20px gutters, 48px section padding, stacked content, mobile typography, wrapped social links, full-width form controls, and menu button.
+- At desktop widths, preserve the full navigation, sidebar placement, multi-column rows, 100px gutters, and desktop typography.
+- Use content-driven breakpoints to prevent collisions between the exact anchors; verify tablet behavior at 768 and 1024px rather than inventing a separate visual direction.
 - Permit long project technology lists and headings to wrap naturally.
-- Preserve content order and anchor navigation at 320, 375, 768, 1024, 1440, and 1920 CSS pixels.
+- Preserve content order and anchor navigation at 320, 375, 390, 768, 1024, 1440, and 1920 CSS pixels.
 - Do not add smooth scrolling or decorative animation; the Figma motion inventory is empty.
+- Implement the approved open menu from node `141:4` as a full-viewport native dialog at mobile widths; desktop retains the inline navigation.
 
 ### Minimal browser JavaScript
 
 - No hydrated framework components.
+- One small native mobile-menu module to open/close the dialog, restore focus, dismiss after navigation, and preserve native Escape/focus behavior; no UI framework.
 - One small analytics module, included only in approved production builds.
-- One small progressively enhanced form module only if Netlify Forms and inline success/error feedback are approved. Native form submission remains the fallback.
+- One small progressively enhanced form module for approved Netlify Forms inline success/error feedback. Native form submission remains the fallback.
 
-### Analytics proposal
+### Approved PostHog measurement plan
 
-- Use `posthog-js` with autocapture, automatic pageviews, session recording, and person profiles disabled.
-- Use memory-only persistence unless the user approves another privacy model.
-- Add explicit `data-analytics-*` attributes to approved outcomes and centralize event names/payload types.
-- Gate inclusion on all of:
-  - Astro production build.
-  - Netlify `CONTEXT=production`.
-  - `PUBLIC_POSTHOG_KEY` present.
-  - `PUBLIC_POSTHOG_HOST` present.
-- The exact event list must be approved before implementation (section 12).
+Track only outcomes that answer whether the portfolio helps visitors understand the work and make contact:
+
+- `portfolio_viewed` — one explicit, property-free denominator event per page load.
+- `portfolio_navigation_clicked` — controlled properties `destination` (`capabilities`, `about`, `skills`, `experience`, `work`, `contact`) and `location` (`desktop_header`, `mobile_menu`).
+- `portfolio_project_opened` — controlled `project` (`bassment`, `marsh_ember`).
+- `portfolio_resume_opened` — controlled `location` (`desktop_header`, `masthead`, `about`, `contact`).
+- `portfolio_contact_method_clicked` — controlled `method` (`email`, `linkedin`, `github`) and `location` (`masthead`, `mobile_menu`, `contact`).
+- `portfolio_contact_form_submitted` — property-free, success only.
+- `portfolio_contact_form_failed` — controlled `reason` (`network`, `service`, `unknown`) so form reliability can be monitored without capturing form contents.
+
+Privacy and reliability rules:
+
+- Disable autocapture, automatic pageviews/page-leave, session recording, user identification, and person profiles.
+- Use memory-only persistence and never call `identify()`.
+- Strip or normalize default URL/referrer properties before sending so query strings, hashes, and external referrers are never captured.
+- Never capture names, email addresses, message contents, arbitrary visible text, or free-form error text.
+- Add explicit `data-analytics-*` attributes and centralize event names/property unions in TypeScript.
+- Analytics failure must never delay or prevent navigation or form submission.
+- Gate inclusion on Astro production build, Netlify `CONTEXT=production`, `PUBLIC_POSTHOG_KEY`, and `PUBLIC_POSTHOG_HOST`.
+- If the key or host is absent, the production page remains fully functional and sends no events.
+
+This supports four useful funnels without excess surveillance: portfolio view → project interest, resume interest, direct contact, and successful form contact.
 
 ### Deployment proposal
 
 - Add a reproducible project-local Netlify CLI instead of using the broken global wrapper.
-- Create/link a new Netlify site under the approved team and retain only its generated `*.netlify.app` URL during implementation.
+- Link only the supplied separate Netlify project `statuesque-kangaroo-16f795` and deploy to `https://statuesque-kangaroo-16f795.netlify.app/` during implementation.
 - Add no custom domain or alias.
 - Keep the new site `noindex` until explicit cutover approval.
 - Use static `dist/` output; do not install `@astrojs/netlify`.
-- Treat branch naming and Git-connected production deployment as blocked until a remote and production branch are confirmed.
+- Use the confirmed GitHub `main` branch for Git-connected production deployment after the plan, checks, and deployment action receive approval.
 
 ## 7. Dependency plan
 
@@ -251,7 +285,7 @@ Exact paths may be reduced if a file would add no meaningful boundary, but new s
 ### Application
 
 - `src/pages/index.astro` — complete page composition and page-level IDs/landmarks.
-- `src/layouts/Layout.astro` — language, metadata, canonical/robots policy, favicons, font imports, skip link, analytics inclusion, and document shell.
+- `src/layouts/Layout.astro` — language, approved text metadata, canonical/robots policy, approved `.ico` favicon, font imports, skip link, analytics inclusion, and document shell; omit social-image metadata until an approved asset exists.
 - `src/content/portfolio.ts` — typed approved copy, destinations, projects, skills, and experience.
 - `src/content/types.ts` — shared content and analytics-safe identifier types if the model is large enough to justify a separate file.
 - `src/components/SiteHeader.astro`
@@ -269,14 +303,17 @@ Exact paths may be reduced if a file would add no meaningful boundary, but new s
 - Component-local `*.stylex.ts` modules where styles belong to a semantic component; consolidate repeated section/row patterns rather than duplicating them.
 - `src/analytics/events.ts` — approved event names and payload types.
 - `src/analytics/posthog.ts` — privacy-conscious initialization and explicit event delegation.
-- `src/scripts/contact-form.ts` — only if enhanced Netlify form feedback is approved.
+- `src/scripts/mobile-menu.ts` — minimal native dialog lifecycle and same-page-link dismissal.
+- `src/scripts/contact-form.ts` — approved Netlify Forms progressive enhancement.
 
 ### Static assets
 
-- `public/assets/status-dot.svg` — exact Figma export.
-- `public/assets/arrow-up-right.svg` — exact Figma export.
-- `public/resume/<approved-file-name>.pdf` — user-supplied resume.
-- Approved favicon and social-sharing assets at user-confirmed paths.
+- `public/assets/status-dot.svg` and any required responsive variant — exact Figma export(s).
+- `public/assets/arrow-up-right.svg` and any required responsive variant — exact Figma export(s).
+- `public/assets/menu.svg` and `public/assets/close.svg` — exact mobile Figma exports.
+- `public/resume.pdf` — supplied, non-empty two-page resume.
+- `public/favicon.ico` — supplied and verified approved favicon; do not substitute an icon-library glyph.
+- Social-sharing image intentionally deferred; add no `og:image`/`twitter:image` placeholder.
 - `public/robots.txt` — `noindex` policy before cutover; changed only in the separately approved cutover.
 
 ### Tests
@@ -293,7 +330,7 @@ Remove only after replacements exist:
 - `src/components/Welcome.astro`
 - `src/assets/astro.svg`
 - `src/assets/background.svg`
-- Starter favicon files when approved replacements are available.
+- Remove or stop referencing the starter `public/favicon.svg`; retain the supplied `public/favicon.ico`.
 - Replace the starter `README.md` with project setup, commands, environment, deployment, and cutover-safety documentation.
 
 Do not modify or remove pre-existing `docs/plan.md`, `docs/specs/`, or the user's `AGENTS.md` changes as part of implementation.
@@ -304,12 +341,12 @@ Do not modify or remove pre-existing `docs/plan.md`, `docs/specs/`, or the user'
 
 **Goal:** Make all content, interaction, analytics, and deployment inputs explicit before implementation.
 
-- [ ] Approve this plan and the responsive proposal.
-- [ ] Resolve every item in section 12 that affects content or behavior.
-- [ ] Confirm the Git remote and production branch strategy.
-- [ ] Confirm the separate Netlify team/site strategy and authorization to create/link a site.
+- [x] Plan approved; desktop/mobile responsive anchors are confirmed.
+- [x] Resolve every item in section 12 that affects content or behavior.
+- [x] Git remote and production branch confirmed: `origin/main`.
+- [x] Separate Netlify review project confirmed: `statuesque-kangaroo-16f795`; linkage/deployment still requires the normal deployment approval gate.
 - [ ] Confirm PostHog project host/key availability; do not copy credentials into chat, source, or logs.
-- [ ] Record final decisions in this plan's Decisions Log before code changes.
+- [x] Record final decisions in this plan's Decisions Log.
 
 **Acceptance criteria**
 
@@ -325,13 +362,13 @@ Do not modify or remove pre-existing `docs/plan.md`, `docs/specs/`, or the user'
 
 **Goal:** Prove Astro 7 + strict TypeScript + StyleX static production output and establish the quality/deployment toolchain before building the page.
 
-- [ ] Add the approved dependencies and package scripts using pnpm only.
-- [ ] Pin pnpm and Node versions without weakening existing engine requirements.
-- [ ] Configure formatting, linting, Astro check, Playwright, axe, Lighthouse CI, env documentation, and Netlify static build settings.
-- [ ] Implement the representative StyleX integration proof using semantic tokens, a responsive rule, and a pseudo-state.
-- [ ] Verify StyleX development CSS loading, production extraction, layer order, and absence of hydration.
-- [ ] Add safe default security headers; tune Content Security Policy only against actual generated assets and approved PostHog/form origins.
-- [ ] Keep deployment indexing disabled and leave all custom domains untouched.
+- [x] Add the approved dependencies and package scripts using pnpm only.
+- [x] Pin pnpm and Node versions without weakening existing engine requirements.
+- [x] Configure formatting, linting, Astro check, Playwright, axe, Lighthouse CI, env documentation, and Netlify static build settings.
+- [x] Implement the representative StyleX integration proof using semantic tokens, responsive rules, and pseudo-states.
+- [x] Verify StyleX development CSS loading, production extraction/layer order, and absence of hydration.
+- [x] Add safe default security headers; defer CSP until the real PostHog host is known.
+- [x] Keep deployment indexing disabled and leave all custom domains untouched.
 
 **Primary files**
 
@@ -360,12 +397,12 @@ pnpm build
 
 **Goal:** Create one typed, reviewable source of truth for the complete page and make every Figma asset local.
 
-- [ ] Transcribe approved Figma copy into `src/content/portfolio.ts` after duplicate/copy decisions are resolved.
-- [ ] Add approved destination URLs and stable analytics-safe identifiers; never use visible free-form text as event payload data.
-- [ ] Copy the two exact Figma SVG assets locally and verify non-empty files, root dimensions, call sites, and rendered geometry.
-- [ ] Add the approved resume, favicon, and social image.
-- [ ] Add the approved self-hosted Instrument Sans and Space Mono sources and required weights only.
-- [ ] Define semantic StyleX tokens from Figma values and documented accessibility adjustments.
+- [x] Transcribe approved Figma copy into `src/content/portfolio.ts`.
+- [x] Add approved destination URLs and stable analytics-safe identifiers; visible/free-form text is never used as an event payload.
+- [x] Copy every exact desktop/mobile Figma SVG asset locally and verify non-empty files, root dimensions, call sites, and rendered geometry; no icon library added.
+- [x] Retain and wire `public/resume.pdf` and `public/favicon.ico`; social-image tags intentionally deferred.
+- [x] Add self-hosted Instrument Sans and Space Mono with the required weights.
+- [x] Define semantic StyleX tokens from the approved Figma values.
 
 **Acceptance criteria**
 
@@ -388,20 +425,21 @@ The `rg` command must return no unapproved placeholders or temporary asset refer
 
 **Goal:** Replace the starter with the full approved page, not a series of independently designed sections.
 
-- [ ] Build all page landmarks and meaningful components against the complete Figma frame.
-- [ ] Apply shared section/row patterns and component-specific StyleX modules.
-- [ ] Implement the approved responsive reflow across the full page as one coordinated system.
-- [ ] Add native anchor navigation, skip link, semantic heading outline, external-link behavior, visible focus, and reduced-motion handling.
-- [ ] Implement the contact form markup and native validation according to the approved form service/behavior.
-- [ ] Remove starter code/assets only after the full page replaces them.
-- [ ] Perform the first desktop/mobile visual correction pass against Figma screenshots.
+- [x] Build all page landmarks and meaningful components against the complete Figma frames.
+- [x] Apply shared section/row patterns and component-specific StyleX modules.
+- [x] Implement the approved responsive reflow across the full page as one coordinated system.
+- [x] Implement the exact mobile open-menu state as a native modal dialog with keyboard focus containment, Escape/close/link dismissal, focus restoration, and scroll lock.
+- [x] Add native anchor navigation, skip link, semantic heading outline, external-link behavior, visible focus, and reduced-motion handling.
+- [x] Implement the Netlify form markup and native validation.
+- [x] Remove starter code/assets after the full page replacement exists.
+- [x] Complete desktop/mobile visual correction passes against Figma screenshots.
 
 **Acceptance criteria**
 
 - The entire approved content hierarchy is present in one static page.
 - Desktop at 1440px closely matches Figma hierarchy, dimensions, typography, color, spacing, rules, and alignment.
 - Layout works without horizontal page scrolling at 320, 375, 768, 1024, 1440, and 1920px and at 200% zoom.
-- All controls and links work by keyboard with visible focus.
+- All controls and links work by keyboard with visible focus; the mobile dialog opens, contains focus, closes with Escape/button/link activation, and restores focus to the trigger.
 - There is exactly one `h1`; headings are ordered; form controls have programmatic labels.
 - There are no framework hydration scripts.
 
@@ -421,8 +459,8 @@ pnpm test:a11y
 
 After all Phase 3 checks pass and the user separately approves deployment:
 
-1. Create/link the approved **new** Netlify site; do not link or alter the current domain project.
-2. Deploy the static build to that site's production `*.netlify.app` URL.
+1. Link only the supplied Netlify project `statuesque-kangaroo-16f795`; do not link or alter the current domain project.
+2. Deploy the static build to `https://statuesque-kangaroo-16f795.netlify.app/`.
 3. Keep `robots.txt` set to noindex and do not add a custom domain.
 4. Smoke-test `/`, every internal anchor, approved external links, assets, keyboard navigation, and response/security headers.
 5. Before and after deployment, verify `christopherharley.com` still resolves to and serves the pre-existing site; make no DNS or Netlify domain changes.
@@ -438,19 +476,20 @@ pnpm netlify:deploy:prod
 
 **Goal:** Add only the browser behavior required for contact submission and intentional, privacy-safe outcome tracking.
 
-- [ ] Implement the approved static-compatible form integration, native fallback, spam protection, and accessible pending/success/error states.
-- [ ] Initialize PostHog only when the production-context gate and both public variables pass.
-- [ ] Implement only the approved typed events and bounded enum-like properties.
-- [ ] Confirm analytics failure never blocks links, navigation, or form submission.
-- [ ] Confirm development and Netlify deploy previews contain no active PostHog initialization or requests.
-- [ ] Add deployment environment variables through Netlify controls, never source files or logs.
+- [x] Implement the Netlify Forms integration, native fallback, honeypot, and accessible pending/success/error states.
+- [x] Initialize PostHog only when the production-context gate and both public variables pass.
+- [x] Implement only the approved typed events and bounded enum-like properties, with an explicit automatic-property allowlist.
+- [x] Confirm analytics failure never blocks links, navigation, or form submission.
+- [x] Confirm development and Netlify deploy-preview builds contain no active PostHog initialization or requests.
+- [ ] Add deployment environment variables through Netlify controls when the PostHog project exists; never place them in source files or logs.
 
 **Acceptance criteria**
 
 - Form success and failure are understandable visually and programmatically, and repeated submission is controlled.
 - Analytics contains no PII, free-form form values, email addresses, query strings, session replay, user identification, or unapproved events.
 - Development and deploy-preview contexts are silent.
-- Production emits one approved event per intended interaction and navigation still succeeds if PostHog is unavailable.
+- Production emits the approved view/outcome events once per intended interaction and navigation still succeeds if PostHog is unavailable.
+- Analytics reports can calculate view-to-project, view-to-resume, view-to-contact, and form-success funnels without storing personal or free-form data.
 
 **Verify**
 
@@ -462,7 +501,7 @@ pnpm test:a11y
 pnpm test:analytics
 ```
 
-Tests must cover missing env vars, `CONTEXT=deploy-preview`, `CONTEXT=production`, blocked PostHog requests, form validation, controlled form success, and controlled network failure.
+Tests must cover missing env vars, `CONTEXT=deploy-preview`, `CONTEXT=production`, property scrubbing, one-event semantics, blocked PostHog requests, form validation, controlled form success, and controlled network/service failure.
 
 #### Deployment checkpoint 2 — Integrated production URL
 
@@ -472,15 +511,15 @@ After checks and separate approval, deploy to the same unaliased Netlify product
 
 **Goal:** Correct discrepancies and produce a green, reviewable release candidate.
 
-- [ ] Run full-page visual review at 320, 375, 768, 1024, 1440, and 1920px.
-- [ ] Compare the 1440px render section-by-section with the Figma screenshot; correct typography, spacing, alignment, wrapping, borders, and asset geometry.
-- [ ] Review at 200% zoom, keyboard-only, and reduced motion.
-- [ ] Run axe at representative widths and interaction states.
-- [ ] Validate all internal/external links and form behavior.
-- [ ] Audit generated HTML/CSS/JS, hydration, console errors, network errors, asset sizes, font loading, and PostHog boundaries.
-- [ ] Run Lighthouse against production output and investigate any score below target rather than weakening thresholds.
-- [ ] Self-review the complete Git diff for secrets, placeholders, accidental churn, generated output, and pre-existing-user-change preservation.
-- [ ] Update `README.md` and this living plan with final commands, decisions, deviations, and deploy IDs.
+- [x] Run full-page visual review at 320, 375, 390, 768, 1024, 1440, and 1920px.
+- [x] Compare the 390px and 1440px renders section-by-section with Figma; correct typography, spacing, alignment, wrapping, borders, and asset geometry.
+- [x] Review equivalent reflow at 200% zoom, keyboard-only operation, and reduced motion.
+- [x] Run axe at desktop/mobile widths, the open dialog, and form-feedback state.
+- [x] Validate internal navigation, local files, external project destinations, and controlled form behavior; LinkedIn's automated request returns its expected anti-bot `999`, while the exact href is browser-tested.
+- [x] Audit generated HTML/CSS/JS, hydration, console errors, asset sizes, font loading, and PostHog boundaries.
+- [x] Run Lighthouse against production output: 1.00 Performance, 1.00 Accessibility, and 1.00 Best Practices across all three runs; SEO is 0.69 solely because the explicitly required pre-cutover `noindex` fails crawlability.
+- [x] Self-review the complete Git diff for secrets, placeholders, accidental churn, generated output, and pre-existing-user-change preservation.
+- [x] Update `README.md` and this living plan with setup, commands, decisions, and verified deviations; deploy IDs remain pending deployment approval.
 
 **Acceptance criteria**
 
@@ -557,7 +596,7 @@ A future cutover checklist must include:
 
 Implementation is complete only when:
 
-1. The full page—not separate section deliverables—matches the approved Figma frame and approved responsive behavior.
+1. The full page—not separate section deliverables—matches the approved desktop/mobile Figma frames, except for the documented omission of Cape & Canopy so the approved work list contains only BASSMENT and Marsh & Ember.
 2. All content, links, assets, form behavior, and analytics events are approved and contain no placeholders.
 3. Astro remains strict, static, and free of unnecessary hydration.
 4. StyleX is the only component styling system and its production integration is proven.
@@ -568,25 +607,11 @@ Implementation is complete only when:
 9. The final diff contains no secrets, debug code, generated artifacts, accidental churn, or unresolved placeholders.
 10. This plan and `README.md` accurately record setup, verification, deployment, deviations, and rollback information.
 
-## 12. Blocking questions and required inputs
+## 12. Remaining external setup
 
-Implementation must not begin until the plan is approved. Items marked **blocking** must also be resolved before the phase that owns them.
+Implementation must not begin until the plan is explicitly approved. No design, content, asset, or interaction decisions remain blocked.
 
-1. **About copy — blocking for Phase 2:** What should replace the duplicate paragraphs in Figma nodes `164:62` and `164:63`? Should node `164:61` remain as written?
-2. **Destinations — blocking for Phase 2:** Provide the exact LinkedIn URL, GitHub URL, public contact email, resume filename/PDF, and destination for each project: Cape & Canopy, BASSMENT, and Marsh & Ember.
-3. **Contact form — blocking for Phase 3/4:** Approve Netlify Forms as the static form service, or name the required service. Confirm the intended recipient, spam protection, and desired inline success/error copy.
-4. **Responsive behavior — blocking for Phase 3:** Is there an approved mobile/tablet Figma frame elsewhere? If not, approve the CSS-only wrap/stack behavior in section 6, including a visible wrapped navigation instead of a hamburger.
-5. **Fonts/assets — blocking for Phase 2:** Will canonical font, favicon, and social-sharing files be supplied? If not, approve self-hosting Instrument Sans and Space Mono through the listed Fontsource packages and provide/approve the favicon and social image direction.
-6. **Copy details — blocking for Phase 2:** Confirm whether the visible hyphens should remain, whether the footer stays `© 2025` or uses the current year, and whether the `#3157FF` resume underline is intentional instead of shared primary `#1E90FF`.
-7. **SEO — blocking for Phase 2:** Provide/approve the exact page title, meta description, canonical URL, and social-sharing text/image. The temporary Netlify URL will remain noindex regardless.
-8. **Analytics — blocking for Phase 4:** Confirm the PostHog host and approve the event taxonomy. Proposed events, with only controlled identifiers, are:
-   - `portfolio_navigation_clicked`
-   - `portfolio_project_opened`
-   - `portfolio_resume_opened`
-   - `portfolio_contact_method_clicked`
-   - `portfolio_contact_form_submitted` (success only)
-9. **Accessibility adjustment — blocking for Phase 3:** Approve increasing the essential name-input boundary contrast (or adding an equivalent accessible affordance) while retaining `#425261` for decorative dividers.
-10. **Git/Netlify — blocking for Deployment checkpoint 1:** Provide or authorize creation/linkage of the Git remote, confirm whether `master` should become `main`, identify the Netlify team, and approve creating a separate unaliased Netlify site. No existing site/domain will be linked or modified.
+1. **PostHog environment — required before production analytics verification, not page implementation:** Create/select the PostHog project and configure its public project key and regional host in Netlify. If absent, analytics remains safely disabled and does not block page implementation or deployment.
 
 ## 13. Decisions and checkpoint log
 
@@ -594,12 +619,16 @@ Update this section as the user approves decisions and deployments.
 
 | Date | Decision/checkpoint | Evidence or deploy ID |
 | --- | --- | --- |
-| Pending | Plan approval | — |
-| Pending | Content and destination approval | — |
-| Pending | Responsive behavior approval | — |
-| Pending | Form and analytics approval | — |
-| Pending | Git/Netlify site strategy | — |
-| Pending | Deployment checkpoint 1 | — |
+| 2026-09-30 | Plan approved | User explicitly replied `approve plan` |
+| Confirmed | About copy updated in Figma | Nodes `164:61`–`164:63` verified |
+| Confirmed | Content and destination approval | Social/contact URLs, BASSMENT and Marsh & Ember URLs, and `public/resume.pdf` verified; Cape & Canopy/Merge Konflict deferred |
+| Confirmed | Responsive behavior approval | Exact 390px mobile, 390×844 open-menu, and 1440px desktop states verified |
+| Confirmed | Form and analytics behavior | Netlify Forms copy/behavior and privacy-conscious PostHog taxonomy approved |
+| Confirmed | Fonts and SEO metadata | Fontsource and text/canonical/Open Graph defaults approved; favicon verified; social image explicitly deferred |
+| Confirmed | Resting-state design colors | Preserve exact Figma form colors; verify focus visibility without resting-color substitution |
+| Confirmed | Git/Netlify site strategy | Local `main` tracks `origin/main`; separate Netlify review project and live domain verified |
+| 2026-09-30 | Local implementation checkpoint | Exact 390px/1440px geometry verified after the approved project omission; `pnpm verify` passed with 16 behavior tests, 3 axe state checks, deploy-preview/production analytics boundary tests, and Lighthouse 1.00/1.00/1.00 with the intentional noindex-only SEO warning |
+| Pending | Deployment checkpoint 1 | Requires separate deployment approval |
 | Pending | Deployment checkpoint 2 | — |
 | Pending | Release-candidate deployment | — |
 | Not authorized | `christopherharley.com` domain cutover | Requires separate explicit approval |

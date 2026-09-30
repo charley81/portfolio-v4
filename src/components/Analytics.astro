@@ -1,0 +1,11 @@
+---
+interface Props {
+  posthogKey: string;
+  posthogHost: string;
+}
+
+const { posthogKey, posthogHost } = Astro.props;
+---
+
+<div hidden data-posthog-key={posthogKey} data-posthog-host={posthogHost}></div>
+<script src="../analytics/posthog.ts"></script>
