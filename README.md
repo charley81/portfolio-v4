@@ -43,7 +43,7 @@ Analytics is included only when Astro is building for production, Netlify sets `
 | `pnpm lighthouse`     | Run Lighthouse CI against `dist/`                         |
 | `pnpm verify`         | Run the complete local verification sequence              |
 
-Lighthouse targets 95+ Performance and 100 Accessibility and Best Practices. Before domain cutover, the intentional `noindex` policy lowers the SEO category to 0.69 solely because the page is blocked from indexing; that audit remains a warning until cutover authorization removes the block.
+Lighthouse targets 95+ Performance and 100 Accessibility, Best Practices, and SEO. The launch build is crawlable, publishes a canonical sitemap, and treats crawlability as a release-blocking assertion.
 
 Install Playwright's Chromium build once before browser tests:
 
@@ -56,7 +56,13 @@ pnpm exec playwright install chromium
 Set `PLAYWRIGHT_BASE_URL` to run the dedicated suite against a deployed site without starting the local Astro build and preview server:
 
 ```sh
-PLAYWRIGHT_BASE_URL=https://statuesque-kangaroo-16f795.netlify.app pnpm test:deployed
+PLAYWRIGHT_BASE_URL=https://christopherharley.com pnpm test:deployed
+```
+
+Before domain cutover, use the exact immutable Netlify deploy permalink instead of the generated production hostname:
+
+```sh
+PLAYWRIGHT_BASE_URL=https://<deploy-id>--statuesque-kangaroo-16f795.netlify.app pnpm test:deployed
 ```
 
 The deployed suite is read-only and safe to rerun. It installs network interception before every page load to block PostHog analytics, never submits the contact form, and checks external destinations by their `href` values instead of visiting them. Without `PLAYWRIGHT_BASE_URL`, existing Playwright suites retain the local `http://127.0.0.1:4321` build and preview lifecycle.
@@ -67,9 +73,9 @@ The contact form uses Netlify Forms with a honeypot. JavaScript progressively en
 
 ## Deployment safety
 
-`netlify.toml` publishes the static `dist/` directory. The review target is the separate Netlify site at `https://statuesque-kangaroo-16f795.netlify.app/`.
+`netlify.toml` publishes the static `dist/` directory from Netlify project `statuesque-kangaroo-16f795`. The launch configuration redirects its generated production hostname to the canonical `https://christopherharley.com/` domain while leaving immutable deploy permalinks available for pre-cutover verification.
 
-The site intentionally remains `noindex` in both metadata and `public/robots.txt`. Do not attach `christopherharley.com`, change DNS, remove the noindex policy, or alter the current live project without a separate, explicit cutover approval.
+The launch build permits indexing and publishes `sitemap-index.xml`. Domain assignment remains a separately approved operation: preserve the existing `christopherharley` Netlify project and its ready deploy as the immediate rollback target, and do not edit the registrar, nameservers, or managed Netlify DNS records.
 
 A production deployment requires separate approval and can then use:
 
