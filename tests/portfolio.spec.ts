@@ -19,13 +19,14 @@ test('renders the approved content, metadata, and destinations', async ({
   await expect(page).toHaveTitle(
     'Christopher Harley — Creative Frontend Developer',
   );
-  await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
-    'content',
-    'noindex, nofollow',
-  );
+  await expect(page.locator('meta[name="robots"]')).toHaveCount(0);
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
     'href',
     'https://christopherharley.com/',
+  );
+  await expect(page.locator('link[rel="sitemap"]')).toHaveAttribute(
+    'href',
+    '/sitemap-index.xml',
   );
   await expect(page.locator('h1')).toHaveCount(1);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
@@ -50,6 +51,32 @@ test('renders the approved content, metadata, and destinations', async ({
   await expect(page.locator('footer')).toContainText(
     '© 2025 Christopher Harley',
   );
+});
+
+test('publishes crawlable canonical discovery files', async ({ request }) => {
+  const robotsResponse = await request.get('/robots.txt');
+  expect(robotsResponse.ok()).toBe(true);
+  const robots = await robotsResponse.text();
+  expect(robots).toMatch(/^User-agent:\s*\*$/im);
+  expect(robots).toMatch(/^Allow:\s*\/$/im);
+  expect(robots).not.toMatch(/^Disallow:\s*\/$/im);
+  expect(robots).toMatch(
+    /^Sitemap:\s*https:\/\/christopherharley\.com\/sitemap-index\.xml$/im,
+  );
+
+  const sitemapIndexResponse = await request.get('/sitemap-index.xml');
+  expect(sitemapIndexResponse.ok()).toBe(true);
+  await expect(sitemapIndexResponse.text()).resolves.toContain(
+    '<loc>https://christopherharley.com/sitemap-0.xml</loc>',
+  );
+
+  const sitemapResponse = await request.get('/sitemap-0.xml');
+  expect(sitemapResponse.ok()).toBe(true);
+  const sitemap = await sitemapResponse.text();
+  expect(
+    sitemap.match(/<loc>https:\/\/christopherharley\.com\/<\/loc>/g) ?? [],
+  ).toHaveLength(1);
+  expect(sitemap).not.toContain('netlify.app');
 });
 
 test('internal navigation reaches every section', async ({ page }) => {

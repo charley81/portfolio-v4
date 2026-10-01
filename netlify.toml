@@ -6,6 +6,12 @@
   NODE_VERSION = "22.14.0"
   PNPM_VERSION = "10.32.1"
 
+[[redirects]]
+  from = "https://statuesque-kangaroo-16f795.netlify.app/*"
+  to = "https://christopherharley.com/:splat"
+  status = 301
+  force = true
+
 [[headers]]
   for = "/*"
   [headers.values]

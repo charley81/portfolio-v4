@@ -16,6 +16,7 @@ import {
 const deployedBaseURL = process.env.PLAYWRIGHT_BASE_URL?.trim();
 const firstPartyOrigin = new URL(deployedBaseURL || 'http://127.0.0.1:4321')
   .origin;
+const generatedProductionURL = 'https://statuesque-kangaroo-16f795.netlify.app';
 
 const responsiveViewports = [
   { width: 320, height: 800 },
@@ -221,13 +222,14 @@ test('renders the approved metadata, content, and destinations', async ({
   await deployedPage.goto();
 
   await expect(page).toHaveTitle(site.title);
-  await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
-    'content',
-    'noindex, nofollow',
-  );
+  await expect(page.locator('meta[name="robots"]')).toHaveCount(0);
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
     'href',
     site.canonicalUrl,
+  );
+  await expect(page.locator('link[rel="sitemap"]')).toHaveAttribute(
+    'href',
+    '/sitemap-index.xml',
   );
   await expect(page.locator('h1')).toHaveCount(1);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
@@ -335,8 +337,26 @@ test('serves robots, required assets, and security headers', async ({
   const robotsResponse = await page.request.get('/robots.txt');
   expect(robotsResponse.ok()).toBe(true);
   const robots = await robotsResponse.text();
-  expect(robots).toMatch(/User-agent:\s*\*/i);
-  expect(robots).toMatch(/Disallow:\s*\//i);
+  expect(robots).toMatch(/^User-agent:\s*\*$/im);
+  expect(robots).toMatch(/^Allow:\s*\/$/im);
+  expect(robots).not.toMatch(/^Disallow:\s*\/$/im);
+  expect(robots).toMatch(
+    /^Sitemap:\s*https:\/\/christopherharley\.com\/sitemap-index\.xml$/im,
+  );
+
+  const sitemapIndexResponse = await page.request.get('/sitemap-index.xml');
+  expect(sitemapIndexResponse.ok()).toBe(true);
+  await expect(sitemapIndexResponse.text()).resolves.toContain(
+    '<loc>https://christopherharley.com/sitemap-0.xml</loc>',
+  );
+
+  const sitemapResponse = await page.request.get('/sitemap-0.xml');
+  expect(sitemapResponse.ok()).toBe(true);
+  const sitemap = await sitemapResponse.text();
+  expect(
+    sitemap.match(/<loc>https:\/\/christopherharley\.com\/<\/loc>/g) ?? [],
+  ).toHaveLength(1);
+  expect(sitemap).not.toContain('netlify.app');
 
   for (const asset of requiredAssets) {
     const response = await page.request.get(asset);
@@ -345,6 +365,33 @@ test('serves robots, required assets, and security headers', async ({
     );
     expect(new URL(response.url()).origin).toBe(firstPartyOrigin);
   }
+});
+
+test('redirects every public host to the canonical HTTPS apex', async ({
+  page,
+}) => {
+  const generatedHostResponse = await page.request.get(
+    `${generatedProductionURL}/resume.pdf`,
+    { maxRedirects: 0 },
+  );
+  expect(generatedHostResponse.status()).toBe(301);
+  expect(generatedHostResponse.headers().location).toBe(
+    'https://christopherharley.com/resume.pdf',
+  );
+
+  const httpApexResponse = await page.request.get(
+    'http://christopherharley.com/',
+    { maxRedirects: 0 },
+  );
+  expect([301, 302, 307, 308]).toContain(httpApexResponse.status());
+  expect(httpApexResponse.headers().location).toBe(site.canonicalUrl);
+
+  const wwwResponse = await page.request.get(
+    'https://www.christopherharley.com/',
+    { maxRedirects: 0 },
+  );
+  expect([301, 302, 307, 308]).toContain(wwwResponse.status());
+  expect(wwwResponse.headers().location).toBe(site.canonicalUrl);
 });
 
 test('desktop same-page navigation reaches every approved section', async ({
