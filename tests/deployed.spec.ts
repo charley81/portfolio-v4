@@ -234,6 +234,10 @@ test('renders the approved metadata, content, and destinations', async ({
     masthead.heading,
   );
   await expect(page.locator('astro-island')).toHaveCount(0);
+  await expect(
+    page.locator('script[src^="/.netlify/scripts/hud"]'),
+  ).toHaveCount(0);
+  await expect(page.locator('iframe')).toHaveCount(0);
 
   for (const item of navigation) {
     await expect(page.locator(`#${item.id}`)).toBeVisible();
