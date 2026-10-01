@@ -1,6 +1,6 @@
 # Domain Cutover Specification
 
-**Status:** Approved for implementation
+**Status:** Implemented; Google Search Console sitemap submission remains user-owned
 
 **Source branch:** `release/domain-cutover`
 
@@ -335,6 +335,36 @@ Also inspect:
 - PostHog production/privacy configuration through read-only inspection.
 - The old immutable rollback deploy.
 - Responsive screenshots at the required widths; no Figma change is expected, so any visual difference is a blocker.
+
+## Implementation Evidence
+
+### Source and launch deploy
+
+- Source branch `release/domain-cutover`, commit `aef7dec`, and [PR #3](https://github.com/charley81/portfolio-v4/pull/3) merged to `main` as `e47ffb1ce3ebf5525d9b948a273821b2dc53e16b`.
+- Netlify production deploy `6abe82fab7998b0008e5521a` reached `ready` at `2026-10-01T15:58:07.040Z` from the merged commit. The prior replacement-project production deploy is `6abe3bc6899c5e000882abc2`.
+- Pre-cutover deployed Playwright against the immutable launch URL passed all 18 non-mutating tests. The form count remained one.
+- Netlify adds `X-Robots-Tag: noindex` to immutable deploy permalinks, so three expected diagnostic Lighthouse runs there scored 100/98/100 Performance, 100 Accessibility, 100 Best Practices, and 69 SEO. The `main--statuesque-kangaroo-16f795.netlify.app` branch URL served byte-identical HTML (SHA-256 `68ae92b13fbac05ae17008b9b457df5b10e9bf7df665e8bde07f4c9567044dd5`) without that platform header; three guarded runs scored 97/97/99 Performance and 100 Accessibility, Best Practices, and SEO.
+- Pre-cutover screenshots at 320, 375, 390, 768, 1024, 1440, and 1920 CSS pixels plus the 390×844 open-menu state were byte-identical to the approved recruiter-ready captures.
+
+### Domain reassignment
+
+- A fresh baseline preserved old project `2cc82b28-4cd1-4e52-a6d2-e76967a6f3bf`, ready deploy `6a95f94ed1df5700076ee53d`, its immutable URL, the Netlify DNS zone, the issued wildcard certificate, and the two managed apex/`www` record shapes.
+- The first authenticated `updateSite` attempt supplied the OpenAPI body parameter name rather than the CLI client's required `body` envelope. Netlify returned the unchanged old-site record; the safety assertion stopped before any second mutation, and the public site remained unchanged.
+- The corrected operation removed the old project's custom-domain binding and assigned `christopherharley.com` to replacement project `bbfc09eb-2782-41df-b4fa-23867635cd05`. Netlify's explicit `force_ssl` setting was then enabled after the initial HTTP check returned 200 instead of redirecting.
+- The accepted new site state reports the custom domain, `ssl: true`, `force_ssl: true`, and launch deploy `6abe82fab7998b0008e5521a`. The old project has no custom domain but retains its ready deploy and immutable rollback URL.
+- No registrar, nameserver, team, repository, environment-variable, form, submission, deploy, or DNS-zone mutation was made directly. Netlify automatically replaced the two managed `NETLIFY` record IDs during reassignment while preserving their apex/`www` hostnames, record type, configured TTL, nameservers, and edge routing.
+
+### Production acceptance
+
+- `https://christopherharley.com/` returns 200 with the approved Astro portfolio; HTTP redirects to HTTPS; `www` redirects to the apex; and the generated Netlify hostname permanently redirects to the canonical domain while preserving paths.
+- The trusted Netlify-managed certificate remains issued for `christopherharley.com` and `*.christopherharley.com`. Canonical metadata, crawlable `robots.txt`, sitemap discovery, static assets, resume, security headers, and zero-hydration output were verified.
+- `PLAYWRIGHT_BASE_URL=https://christopherharley.com pnpm test:deployed` passed all 18 tests, including representative axe states, responsive overflow, keyboard/focus behavior, reduced motion, canonical redirects, assets, headers, console/network health, form structure without submission, and the Netlify HUD regression.
+- Three production Lighthouse runs used Lighthouse's native `blockedUrlPatterns` setting for PostHog and scored 100/97/98 Performance and 100 Accessibility, Best Practices, and SEO. The reports contained the guard setting and zero PostHog network requests.
+- Production screenshots at every required width and the open-menu state were byte-identical to the approved recruiter-ready captures.
+- Netlify still registers one `contact` form and exactly one submission. Both required PostHog variables remain configured without exposing their values; the source production gate and privacy allowlist are unchanged.
+- PostHog MCP read-only inspection was unavailable because the connector failed during initialization. The first diagnostic immutable-URL Lighthouse attempt used a Puppeteer interception guard that did not attach, so up to three synthetic `portfolio_viewed` events may have reached PostHog. No form event, personal data, URL/referrer data, or other approved outcome event was involved. Subsequent accepted Lighthouse and Playwright runs were guarded. Dashboard confirmation remains an operational follow-up, not a site-serving or privacy blocker.
+- After live acceptance, the user explicitly expanded the acceptance-branch scope to add native CSS smooth scrolling for same-page navigation. `prefers-reduced-motion: reduce` restores immediate scrolling, and local/deployed regression assertions cover both states without adding JavaScript.
+- Google Search Console authentication was not available. The canonical sitemap is live at `https://christopherharley.com/sitemap-index.xml` and remains to be submitted by the user.
 
 ## Out of Scope
 

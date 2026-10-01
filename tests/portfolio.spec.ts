@@ -215,11 +215,12 @@ test('contact form shows the approved failure message', async ({ page }) => {
   );
 });
 
-test('reduced motion removes meaningful transition duration', async ({
-  page,
-}) => {
-  await page.emulateMedia({ reducedMotion: 'reduce' });
+test('uses smooth scrolling and respects reduced motion', async ({ page }) => {
   await page.goto('/');
+  await expect(page.locator('html')).toHaveCSS('scroll-behavior', 'smooth');
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(page.locator('html')).toHaveCSS('scroll-behavior', 'auto');
 
   const duration = await page
     .getByRole('link', { name: 'Skip to main content' })
