@@ -59,7 +59,7 @@ Set `PLAYWRIGHT_BASE_URL` to run the dedicated suite against a deployed site wit
 PLAYWRIGHT_BASE_URL=https://christopherharley.com pnpm test:deployed
 ```
 
-Before domain cutover, use the exact immutable Netlify deploy permalink instead of the generated production hostname:
+To verify a specific immutable Netlify deployment before promoting it, use its deploy permalink:
 
 ```sh
 PLAYWRIGHT_BASE_URL=https://<deploy-id>--statuesque-kangaroo-16f795.netlify.app pnpm test:deployed
@@ -67,15 +67,26 @@ PLAYWRIGHT_BASE_URL=https://<deploy-id>--statuesque-kangaroo-16f795.netlify.app 
 
 The deployed suite is read-only and safe to rerun. It installs network interception before every page load to block PostHog analytics, never submits the contact form, and checks external destinations by their `href` values instead of visiting them. Without `PLAYWRIGHT_BASE_URL`, existing Playwright suites retain the local `http://127.0.0.1:4321` build and preview lifecycle.
 
+## Sitemap and indexing
+
+The canonical site URL is configured in `astro.config.mjs`, and the `@astrojs/sitemap` integration generates these files during every production build:
+
+- `sitemap-index.xml` — stable sitemap URL advertised to crawlers;
+- `sitemap-0.xml` — generated URL set containing the canonical homepage.
+
+`public/robots.txt` permits crawling and advertises `https://christopherharley.com/sitemap-index.xml`. The document head also links to `/sitemap-index.xml`. Local and deployed Playwright suites verify that both sitemap files resolve, contain only canonical `christopherharley.com` URLs, and never expose a Netlify hostname.
+
+The sitemap is live at <https://christopherharley.com/sitemap-index.xml>. Submitting that URL through the authenticated Google Search Console property is an external operational step; it does not require a source-code change or credentials in this repository.
+
 ## Forms
 
 The contact form uses Netlify Forms with a honeypot. JavaScript progressively enhances submission with inline pending, success, and failure feedback; native form submission remains available when JavaScript is disabled. Configure form notification delivery to `chrisharley81@gmail.com` in the Netlify site controls.
 
 ## Deployment safety
 
-`netlify.toml` publishes the static `dist/` directory from Netlify project `statuesque-kangaroo-16f795`. The launch configuration redirects its generated production hostname to the canonical `https://christopherharley.com/` domain while leaving immutable deploy permalinks available for pre-cutover verification.
+`netlify.toml` publishes the static `dist/` directory from Netlify project `statuesque-kangaroo-16f795`. `https://christopherharley.com/` is the live canonical domain, and the generated production hostname redirects to it while immutable deploy permalinks remain available for release verification.
 
-The launch build permits indexing and publishes `sitemap-index.xml`. Domain assignment remains a separately approved operation: preserve the existing `christopherharley` Netlify project and its ready deploy as the immediate rollback target, and do not edit the registrar, nameservers, or managed Netlify DNS records.
+The production build permits indexing and publishes the canonical sitemap. Preserve the former `christopherharley` Netlify project's ready deploy as the immediate full-site rollback target. Do not change the registrar, nameservers, managed Netlify DNS records, custom-domain assignment, or rollback project without explicit authorization.
 
 A production deployment requires separate approval and can then use:
 
