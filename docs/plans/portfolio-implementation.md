@@ -1,6 +1,6 @@
 # Portfolio Implementation Plan
 
-**Status:** Approved and implemented locally; awaiting separate deployment approval and PostHog environment setup
+**Status:** Recruiter-ready release verified on the unaliased Netlify review deployment; domain cutover is not authorized
 **Scope:** One complete, production-ready portfolio page at `/`
 **Approved design:** Figma page `final`, frame `christopher-harley-portfolio` (`164:3`)
 **Plan destination:** This file is the only implementation plan for the page. No section-level specs or plans will be created.
@@ -345,7 +345,7 @@ Do not modify or remove pre-existing `docs/plan.md`, `docs/specs/`, or the user'
 - [x] Resolve every item in section 12 that affects content or behavior.
 - [x] Git remote and production branch confirmed: `origin/main`.
 - [x] Separate Netlify review project confirmed: `statuesque-kangaroo-16f795`; linkage/deployment still requires the normal deployment approval gate.
-- [ ] Confirm PostHog project host/key availability; do not copy credentials into chat, source, or logs.
+- [x] Confirm PostHog project host/key availability; values are configured in Netlify and were not copied into chat, source, or logs.
 - [x] Record final decisions in this plan's Decisions Log.
 
 **Acceptance criteria**
@@ -481,7 +481,7 @@ pnpm netlify:deploy:prod
 - [x] Implement only the approved typed events and bounded enum-like properties, with an explicit automatic-property allowlist.
 - [x] Confirm analytics failure never blocks links, navigation, or form submission.
 - [x] Confirm development and Netlify deploy-preview builds contain no active PostHog initialization or requests.
-- [ ] Add deployment environment variables through Netlify controls when the PostHog project exists; never place them in source files or logs.
+- [x] Add deployment environment variables through Netlify controls; no project values were placed in source files, documentation, or logs.
 
 **Acceptance criteria**
 
@@ -615,8 +615,6 @@ Implementation must not begin until the plan is explicitly approved. No design, 
 
 ## 13. Decisions and checkpoint log
 
-Update this section as the user approves decisions and deployments.
-
 | Date | Decision/checkpoint | Evidence or deploy ID |
 | --- | --- | --- |
 | 2026-09-30 | Plan approved | User explicitly replied `approve plan` |
@@ -628,7 +626,45 @@ Update this section as the user approves decisions and deployments.
 | Confirmed | Resting-state design colors | Preserve exact Figma form colors; verify focus visibility without resting-color substitution |
 | Confirmed | Git/Netlify site strategy | Local `main` tracks `origin/main`; separate Netlify review project and live domain verified |
 | 2026-09-30 | Local implementation checkpoint | Exact 390px/1440px geometry verified after the approved project omission; `pnpm verify` passed with 16 behavior tests, 3 axe state checks, deploy-preview/production analytics boundary tests, and Lighthouse 1.00/1.00/1.00 with the intentional noindex-only SEO warning |
-| Pending | Deployment checkpoint 1 | Requires separate deployment approval |
-| Pending | Deployment checkpoint 2 | — |
-| Pending | Release-candidate deployment | — |
+| 2026-10-01 | Recruiter-readiness source promoted | Branch `release/recruiter-ready`, commit `f3e3754`, and [PR #1](https://github.com/charley81/portfolio-v4/pull/1) merged as `5667b743514d47b15c99e8649452fb7cdab8ab9a` |
+| 2026-10-01 | Release-candidate deployment accepted | Review URL `https://statuesque-kangaroo-16f795.netlify.app/`; ready deploy `6abe2efce5860600083a3894`, published `2026-10-01T09:59:47.158Z` from merged `main` |
+| 2026-10-01 | Rollback deploy preserved | Immediate previous ready production deploy `6abdb32ec509b3bcbd95329e` remains the rollback target |
+| 2026-10-01 | Netlify badge removed | User approved disabling `built_with_badge_enabled` for only the review project after its injected HUD obscured the approved design; fresh HTML and the deployed regression suite confirm no HUD script or iframe |
 | Not authorized | `christopherharley.com` domain cutover | Requires separate explicit approval |
+
+### Recruiter-ready release evidence
+
+#### Deployment and domain isolation
+
+- The accepted Netlify production deploy is `ready`, uses branch `main`, context `production`, and commit `5667b743514d47b15c99e8649452fb7cdab8ab9a`.
+- The review project has no custom domain or domain aliases. The temporary hostname still returns `noindex, nofollow`, and `robots.txt` contains `User-agent: *` plus `Disallow: /`.
+- Final HTTP checks returned 200 for both the review URL and `https://christopherharley.com/`. Their titles remain distinct: the review site serves `Christopher Harley — Creative Frontend Developer`, while the existing domain continues serving `Christopher Harley - Design Engineer`.
+- Netlify initially injected `/.netlify/scripts/hud?variant=public`, which displayed a non-Figma “Powered by Netlify” overlay. After explicit approval, only the review project's `built_with_badge_enabled` setting was disabled. No deploy, DNS, domain, Forms, or analytics setting changed. A deployed regression assertion now prevents the HUD script or an iframe from silently returning.
+
+#### Forms
+
+- Netlify still registers one `contact` form and exactly one submission—the previously acknowledged controlled synthetic submission.
+- That submission returned HTTP 200, displayed the approved inline success state, and its notification delivery was confirmed by the user. The controlled blocked-network check displayed the approved inline failure state and created no submission.
+- Recruiter-ready automation did not submit the form. The final submission count remained one.
+
+#### PostHog
+
+- Production analytics remains enabled only through the approved Netlify production-context gate. No project token or host value was recorded here.
+- All seven approved events remain present and verified: `portfolio_viewed`, `portfolio_navigation_clicked`, `portfolio_project_opened`, `portfolio_resume_opened`, `portfolio_contact_method_clicked`, `portfolio_contact_form_submitted`, and `portfolio_contact_form_failed`.
+- The five-tile [Portfolio outcome analytics dashboard](https://us.posthog.com/project/80336/dashboard/2156042) ran without warnings.
+- The GeoIP transformation remains disabled. Post-disable event inspection found zero GeoIP, identified-user, current-URL, referrer, session-ID, form-content, or campaign values.
+- Deployed Playwright and Lighthouse runs blocked PostHog endpoints; acceptance automation emitted no production analytics events.
+
+#### Verification completed
+
+- Pre-merge local release gate: `pnpm install --frozen-lockfile`, `pnpm verify`, `pnpm audit --prod`, `pnpm test`, hydration search, and `git diff --check` passed. The broad Playwright run reported 20 passed and 17 remote-only tests skipped as intended; the production dependency audit found no known vulnerabilities.
+- Final deployed command: `PLAYWRIGHT_BASE_URL=https://statuesque-kangaroo-16f795.netlify.app pnpm test:deployed` — 17 passed after the badge setting change and again after adding the HUD/iframe regression assertion. This included axe checks for desktop, mobile, and open-dialog states; keyboard flow; focus visibility/restoration; reduced motion; first-party assets and headers; approved links; form structure without submission; and console/network health.
+- Temporary screenshots were reviewed at 320, 375, 390, 768, 1024, 1440, and 1920 CSS pixels. No clipping, overlap, horizontal overflow, or unintended reflow was found.
+- Figma screenshots from desktop node `164:3`, mobile node `164:162`, and open-menu node `141:4` were compared with the deployed 1440px, 390px, and 390×844 captures. Hierarchy, typography, spacing, alignment, colors, assets, and responsive behavior remain faithful. The shorter page height is the already approved consequence of omitting the deferred third project, not a release regression.
+- Three deployed Lighthouse runs scored 99 Performance, 100 Accessibility, 100 Best Practices, and 69 SEO each. The SEO reduction is solely the approved temporary indexing block; the crawlability assertion remains intentionally non-actionable until domain cutover.
+
+#### Deviations and remaining risk
+
+- Netlify CLI's `sites:list --json` path terminated unexpectedly, so deployment identity was read through the authenticated, read-only Netlify API instead.
+- The Figma desktop MCP connection initially timed out; the installed extension was updated/reconnected and the authoritative comparisons were then completed.
+- No recruiter-readiness blocker remains. Domain cutover, indexing activation, sitemap/Search Console work, and social-sharing imagery remain separately gated or deferred.
