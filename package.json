@@ -19,6 +19,7 @@
     "test:e2e": "playwright test tests/portfolio.spec.ts",
     "test:a11y": "playwright test tests/accessibility.spec.ts",
     "test:analytics": "CONTEXT=deploy-preview PUBLIC_POSTHOG_KEY=phc_test PUBLIC_POSTHOG_HOST=http://127.0.0.1:4321/posthog ANALYTICS_EXPECTED=disabled playwright test tests/analytics.spec.ts && CONTEXT=production PUBLIC_POSTHOG_KEY=phc_test PUBLIC_POSTHOG_HOST=http://127.0.0.1:4321/posthog ANALYTICS_EXPECTED=enabled playwright test tests/analytics.spec.ts",
+    "test:deployed": "playwright test tests/deployed.spec.ts",
     "test": "playwright test",
     "lighthouse": "lhci autorun",
     "verify": "pnpm format:check && pnpm lint && pnpm check && pnpm build && pnpm test:e2e && pnpm test:a11y && pnpm test:analytics && pnpm build && pnpm lighthouse",

@@ -39,6 +39,7 @@ Analytics is included only when Astro is building for production, Netlify sets `
 | `pnpm test:e2e`       | Run portfolio behavior tests                              |
 | `pnpm test:a11y`      | Run axe accessibility tests                               |
 | `pnpm test:analytics` | Verify deploy-preview and production analytics boundaries |
+| `pnpm test:deployed`  | Run the read-only deployed-site suite                     |
 | `pnpm lighthouse`     | Run Lighthouse CI against `dist/`                         |
 | `pnpm verify`         | Run the complete local verification sequence              |
 
@@ -49,6 +50,16 @@ Install Playwright's Chromium build once before browser tests:
 ```sh
 pnpm exec playwright install chromium
 ```
+
+### Deployed-site verification
+
+Set `PLAYWRIGHT_BASE_URL` to run the dedicated suite against a deployed site without starting the local Astro build and preview server:
+
+```sh
+PLAYWRIGHT_BASE_URL=https://statuesque-kangaroo-16f795.netlify.app pnpm test:deployed
+```
+
+The deployed suite is read-only and safe to rerun. It installs network interception before every page load to block PostHog analytics, never submits the contact form, and checks external destinations by their `href` values instead of visiting them. Without `PLAYWRIGHT_BASE_URL`, existing Playwright suites retain the local `http://127.0.0.1:4321` build and preview lifecycle.
 
 ## Forms
 
