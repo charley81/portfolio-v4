@@ -1,5 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const localBaseURL = 'http://127.0.0.1:4321';
+const remoteBaseURL = process.env.PLAYWRIGHT_BASE_URL?.trim();
+
 export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
@@ -8,7 +11,7 @@ export default defineConfig({
   workers: process.env.CI ? 2 : undefined,
   reporter: process.env.CI ? 'github' : 'list',
   use: {
-    baseURL: 'http://127.0.0.1:4321',
+    baseURL: remoteBaseURL || localBaseURL,
     trace: 'retain-on-failure',
   },
   projects: [
@@ -24,10 +27,12 @@ export default defineConfig({
       },
     },
   ],
-  webServer: {
-    command: 'pnpm build && pnpm preview --host 127.0.0.1 --port 4321',
-    url: 'http://127.0.0.1:4321',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
+  webServer: remoteBaseURL
+    ? undefined
+    : {
+        command: 'pnpm build && pnpm preview --host 127.0.0.1 --port 4321',
+        url: localBaseURL,
+        reuseExistingServer: !process.env.CI,
+        timeout: 120_000,
+      },
 });
