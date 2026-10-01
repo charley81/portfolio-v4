@@ -482,12 +482,15 @@ test('skip link receives visible keyboard focus', async ({ deployedPage }) => {
   expect(focusStyle.top).toBeGreaterThanOrEqual(0);
 });
 
-test('reduced motion removes meaningful transition duration', async ({
+test('uses smooth scrolling and respects reduced motion', async ({
   deployedPage,
 }) => {
   const { page } = deployedPage;
-  await page.emulateMedia({ reducedMotion: 'reduce' });
   await deployedPage.goto();
+  await expect(page.locator('html')).toHaveCSS('scroll-behavior', 'smooth');
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(page.locator('html')).toHaveCSS('scroll-behavior', 'auto');
 
   const durations = await page
     .getByRole('link', { name: 'Skip to main content' })

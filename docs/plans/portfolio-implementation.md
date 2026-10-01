@@ -1,6 +1,6 @@
 # Portfolio Implementation Plan
 
-**Status:** Recruiter-ready release verified on the unaliased Netlify review deployment; domain cutover is not authorized
+**Status:** Production launch verified at `christopherharley.com`; Search Console sitemap submission remains user-owned
 **Scope:** One complete, production-ready portfolio page at `/`
 **Approved design:** Figma page `final`, frame `christopher-harley-portfolio` (`164:3`)
 **Plan destination:** This file is the only implementation plan for the page. No section-level specs or plans will be created.
@@ -630,7 +630,7 @@ Implementation must not begin until the plan is explicitly approved. No design, 
 | 2026-10-01 | Release-candidate deployment accepted | Review URL `https://statuesque-kangaroo-16f795.netlify.app/`; ready deploy `6abe2efce5860600083a3894`, published `2026-10-01T09:59:47.158Z` from merged `main` |
 | 2026-10-01 | Rollback deploy preserved | Immediate previous ready production deploy `6abdb32ec509b3bcbd95329e` remains the rollback target |
 | 2026-10-01 | Netlify badge removed | User approved disabling `built_with_badge_enabled` for only the review project after its injected HUD obscured the approved design; fresh HTML and the deployed regression suite confirm no HUD script or iframe |
-| Not authorized | `christopherharley.com` domain cutover | Requires separate explicit approval |
+| 2026-10-01 | `christopherharley.com` domain cutover completed | Netlify binding moved to project `statuesque-kangaroo-16f795`; HTTPS, indexing, redirects, Forms, analytics boundaries, accessibility, responsive fidelity, and rollback availability verified |
 
 ### Recruiter-ready release evidence
 
@@ -667,4 +667,34 @@ Implementation must not begin until the plan is explicitly approved. No design, 
 
 - Netlify CLI's `sites:list --json` path terminated unexpectedly, so deployment identity was read through the authenticated, read-only Netlify API instead.
 - The Figma desktop MCP connection initially timed out; the installed extension was updated/reconnected and the authoritative comparisons were then completed.
-- No recruiter-readiness blocker remains. Domain cutover, indexing activation, sitemap/Search Console work, and social-sharing imagery remain separately gated or deferred.
+- The recruiter-readiness phase had no blocker. Its then-deferred domain cutover and indexing activation are recorded below; Search Console submission and social-sharing imagery remain follow-ups.
+
+### Production domain cutover evidence
+
+#### Source, deployment, and rollback
+
+- Branch `release/domain-cutover`, commit `aef7dec`, and [PR #3](https://github.com/charley81/portfolio-v4/pull/3) merged to `main` as `e47ffb1ce3ebf5525d9b948a273821b2dc53e16b`.
+- Replacement deploy `6abe82fab7998b0008e5521a` reached `ready` at `2026-10-01T15:58:07.040Z` from the merged commit. Previous replacement-project production deploy `6abe3bc6899c5e000882abc2` remains available.
+- Old project `christopherharley` retains ready deploy `6a95f94ed1df5700076ee53d` and its immutable URL as the immediate full-site rollback target. The project was not deleted or repurposed.
+
+#### Domain and indexing
+
+- `christopherharley.com` is now the primary custom domain of Netlify project `statuesque-kangaroo-16f795`; the old project has no custom-domain binding. The new project reports `ssl: true` and `force_ssl: true`.
+- The apex returns the approved Astro portfolio over trusted HTTPS; HTTP redirects to HTTPS; `www` redirects to the apex; and the generated Netlify hostname permanently redirects to the canonical domain while preserving paths.
+- Canonical metadata points to `https://christopherharley.com/`, no robots meta or HTTP indexing block remains, `robots.txt` permits crawling, and the canonical sitemap is live at `https://christopherharley.com/sitemap-index.xml`.
+- Registrar ownership, Netlify nameservers, and the DNS zone were untouched. Netlify automatically replaced the managed apex/`www` `NETLIFY` record IDs during site reassignment while preserving their hostnames, type, configured TTL, and edge routing.
+
+#### Production verification
+
+- Pre-cutover remote Playwright passed 18 tests against immutable launch deploy `6abe82fab7998b0008e5521a`. Netlify's automatic `X-Robots-Tag: noindex` on immutable permalinks made SEO 69 there; the byte-identical `main--` branch URL passed guarded Lighthouse at 97/97/99 Performance and 100 Accessibility, Best Practices, and SEO.
+- Post-cutover command `PLAYWRIGHT_BASE_URL=https://christopherharley.com pnpm test:deployed` passed all 18 non-mutating tests. Three guarded production Lighthouse runs scored 100/97/98 Performance and 100 Accessibility, Best Practices, and SEO.
+- Production screenshots at 320, 375, 390, 768, 1024, 1440, and 1920 CSS pixels plus the 390×844 open-menu state were byte-identical to the approved recruiter-ready captures.
+- The `contact` form remains registered with exactly the one acknowledged submission; automation made no form submission. Both required PostHog variables remain configured, and accepted Playwright/Lighthouse runs blocked analytics ingestion.
+- PostHog MCP inspection was unavailable because the connector failed to initialize. A discarded diagnostic Lighthouse guard also failed to attach, so up to three synthetic `portfolio_viewed` events may exist; no form event or personal, URL, referrer, or campaign data was involved. Dashboard confirmation remains a follow-up.
+
+#### Operational deviations and follow-up
+
+- The first domain-removal API request used the OpenAPI body parameter name instead of the CLI client's `body` envelope. It was a verified no-op, and the safety check stopped before the new project was touched. The corrected operation then completed normally.
+- Plain HTTP initially returned 200 because the replacement project's `force_ssl` value was unset. Enabling the supported Netlify setting produced the required 301 HTTPS redirect before full acceptance continued.
+- After live acceptance, the user explicitly requested native CSS smooth scrolling for same-page navigation. The acceptance branch adds it with a `prefers-reduced-motion` override and local/deployed regression coverage; no JavaScript is added.
+- Google Search Console access was unavailable. Submit `https://christopherharley.com/sitemap-index.xml` through the authenticated Search Console account; submission affects discovery timing, not current site availability.
