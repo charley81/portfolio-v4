@@ -2,7 +2,7 @@ export type NavigationDestination =
   'capabilities' | 'about' | 'skills' | 'experience' | 'work' | 'contact';
 
 export type ContactMethod = 'email' | 'linkedin' | 'github';
-export type ProjectId = 'bassment' | 'marsh_ember';
+export type ProjectId = 'bassment' | 'marsh_ember' | 'stillroom';
 export type ResumeLocation =
   'desktop_header' | 'mobile_menu' | 'masthead' | 'about' | 'contact';
 
@@ -150,21 +150,30 @@ export const experience = [
 
 export const projects = [
   {
+    id: 'stillroom',
+    category: 'BRANDING',
+    title: 'STILLROOM',
+    description:
+      'A modern, design-driven marketing website for an independent creative studio specializing in branding, digital experiences, and visual storytelling for hospitality businesses.',
+    technologies: 'Astro · Sanity · TypeScript · Tailwind',
+    href: 'https://stillroom-app.netlify.app/',
+  },
+  {
     id: 'bassment',
-    category: 'MUSIC & CULTURE · LIVE PROJECT',
+    category: 'MUSIC & CULTURE',
     title: 'BASSMENT',
     description:
       'An immersive digital home for an underground music venue, organized around events, artists, sound, and the physical character of the space. Built to capture the raw energy of live music culture.',
-    technologies: 'Next.js · Sanity · TypeScript · Framer Motion',
+    technologies: 'Next.js · Sanity · TypeScript',
     href: 'https://clubbassment.com/',
   },
   {
     id: 'marsh_ember',
-    category: 'HOSPITALITY · LIVE PROJECT',
+    category: 'HOSPITALITY',
     title: 'Marsh & Ember',
     description:
       'A warm, editorial restaurant experience connecting seasonal food, hospitality, private dining, events, and reservations. Lighthouse performance 99, accessibility 100.',
-    technologies: 'Astro · Sanity · TypeScript · Tailwind CSS',
+    technologies: 'Astro · Sanity · TypeScript · Tailwind',
     href: 'https://marshandember.netlify.app/',
   },
 ] as const satisfies readonly Project[];

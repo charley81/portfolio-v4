@@ -25,6 +25,7 @@ const navigationLocations = [
   'mobile_menu',
 ] as const satisfies readonly NavigationLocation[];
 const projectIds = [
+  'stillroom',
   'bassment',
   'marsh_ember',
 ] as const satisfies readonly ProjectId[];
