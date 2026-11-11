@@ -64,6 +64,14 @@ test('honors the production gate and emits only controlled analytics data', asyn
     .click();
 
   await page.evaluate(() => {
+    document.addEventListener('click', (event) => event.preventDefault(), {
+      capture: true,
+      once: true,
+    });
+  });
+  await page.getByRole('link', { name: /STILLROOM project/ }).click();
+
+  await page.evaluate(() => {
     document.dispatchEvent(
       new CustomEvent('portfolio:analytics', {
         detail: { event: 'portfolio_contact_form_failed', reason: 'network' },
@@ -76,11 +84,15 @@ test('honors the production gate and emits only controlled analytics data', asyn
     .toContain('portfolio_navigation_clicked');
   await expect
     .poll(() => requests.join('\n'))
+    .toContain('portfolio_project_opened');
+  await expect
+    .poll(() => requests.join('\n'))
     .toContain('portfolio_contact_form_failed');
 
   const payloads = requests.join('\n');
   expect(payloads).toContain('"destination":"work"');
   expect(payloads).toContain('"location":"desktop_header"');
+  expect(payloads).toContain('"project":"stillroom"');
   expect(payloads).toContain('"reason":"network"');
   expect(payloads).not.toContain('private=query-value');
   expect(payloads).not.toContain('private-fragment');

@@ -33,11 +33,15 @@ test('renders the approved content, metadata, and destinations', async ({
     'Creative Frontend Developer',
   );
 
-  await expect(page.locator('#work article')).toHaveCount(2);
+  await expect(page.locator('#work article')).toHaveCount(3);
+  await expect(page.locator('#work')).toContainText('STILLROOM');
   await expect(page.locator('#work')).toContainText('BASSMENT');
   await expect(page.locator('#work')).toContainText('Marsh & Ember');
   await expect(page.locator('#work')).not.toContainText('Cape & Canopy');
 
+  await expect(
+    page.getByRole('link', { name: /STILLROOM project/ }),
+  ).toHaveAttribute('href', 'https://stillroom-app.netlify.app/');
   await expect(
     page.getByRole('link', { name: /BASSMENT project/ }),
   ).toHaveAttribute('href', 'https://clubbassment.com/');
