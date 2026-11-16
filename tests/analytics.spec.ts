@@ -1,5 +1,10 @@
 import { expect, test } from '@playwright/test';
 
+interface CapturedEvent {
+  event?: string;
+  properties?: Record<string, unknown>;
+}
+
 const decodePostBody = (body: string | null): string => {
   if (!body) return '';
 
@@ -12,6 +17,25 @@ const decodePostBody = (body: string | null): string => {
     return decodeURIComponent(encodedData);
   }
 };
+
+const parseCapturedEvents = (requests: string[]): CapturedEvent[] =>
+  requests.flatMap((request) => {
+    try {
+      const payload: unknown = JSON.parse(request);
+      if (typeof payload !== 'object' || payload === null) return [];
+
+      if ('batch' in payload && Array.isArray(payload.batch)) {
+        return payload.batch.filter(
+          (event): event is CapturedEvent =>
+            typeof event === 'object' && event !== null,
+        );
+      }
+
+      return [payload as CapturedEvent];
+    } catch {
+      return [];
+    }
+  });
 
 test('honors the production gate and emits only controlled analytics data', async ({
   page,
@@ -39,7 +63,10 @@ test('honors the production gate and emits only controlled analytics data', asyn
   });
 
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto('/?private=query-value#private-fragment');
+  await page.goto('/?private=query-value#private-fragment', {
+    referer:
+      'https://search.example/private-referrer-path?private=referrer-query#referrer-fragment',
+  });
 
   if (process.env.ANALYTICS_EXPECTED !== 'enabled') {
     await page.waitForTimeout(300);
@@ -50,6 +77,7 @@ test('honors the production gate and emits only controlled analytics data', asyn
 
   await expect(page.locator('[data-posthog-key]')).toHaveCount(1);
   await expect.poll(() => requests.join('\n')).toContain('portfolio_viewed');
+  await expect.poll(() => requests.join('\n')).toContain('$pageview');
 
   await page.evaluate(() => {
     document.addEventListener('click', (event) => event.preventDefault(), {
@@ -89,14 +117,53 @@ test('honors the production gate and emits only controlled analytics data', asyn
     .poll(() => requests.join('\n'))
     .toContain('portfolio_contact_form_failed');
 
+  await page.evaluate(() => {
+    history.replaceState(
+      {},
+      '',
+      '/?private=second-query#second-private-fragment',
+    );
+    window.dispatchEvent(new PageTransitionEvent('pagehide'));
+  });
+  await expect.poll(() => requests.join('\n')).toContain('$pageleave');
+
+  const capturedEvents = parseCapturedEvents(requests);
+  const pageview = capturedEvents.find((event) => event.event === '$pageview');
+  const pageleave = capturedEvents.find(
+    (event) => event.event === '$pageleave',
+  );
+  const navigation = capturedEvents.find(
+    (event) => event.event === 'portfolio_navigation_clicked',
+  );
   const payloads = requests.join('\n');
+
+  expect(pageview?.properties).toMatchObject({
+    $current_url: 'http://127.0.0.1:4321/',
+    $host: '127.0.0.1:4321',
+    $pathname: '/',
+    $referrer: 'https://search.example',
+    $referring_domain: 'search.example',
+  });
+  expect(pageview?.properties?.$session_id).toEqual(expect.any(String));
+  expect(pageview?.properties?.$window_id).toEqual(expect.any(String));
+  expect(pageleave?.properties).toMatchObject({
+    $prev_pageview_duration: expect.any(Number),
+    $prev_pageview_pathname: '/',
+    $session_id: expect.any(String),
+  });
+  expect(navigation?.properties).not.toHaveProperty('$current_url');
+  expect(navigation?.properties).not.toHaveProperty('$referrer');
+
   expect(payloads).toContain('"destination":"work"');
   expect(payloads).toContain('"location":"desktop_header"');
   expect(payloads).toContain('"project":"stillroom"');
   expect(payloads).toContain('"reason":"network"');
   expect(payloads).not.toContain('private=query-value');
   expect(payloads).not.toContain('private-fragment');
-  expect(payloads).not.toContain('$current_url');
-  expect(payloads).not.toContain('$referrer');
+  expect(payloads).not.toContain('private-referrer-path');
+  expect(payloads).not.toContain('referrer-query');
+  expect(payloads).not.toContain('referrer-fragment');
+  expect(payloads).not.toContain('second-query');
+  expect(payloads).not.toContain('second-private-fragment');
   expect(payloads).not.toContain('chrisharley81@gmail.com');
 });

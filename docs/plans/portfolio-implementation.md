@@ -653,6 +653,7 @@ Implementation must not begin until the plan is explicitly approved. No design, 
 - All seven approved events remain present and verified: `portfolio_viewed`, `portfolio_navigation_clicked`, `portfolio_project_opened`, `portfolio_resume_opened`, `portfolio_contact_method_clicked`, `portfolio_contact_form_submitted`, and `portfolio_contact_form_failed`.
 - The five-tile [Portfolio outcome analytics dashboard](https://us.posthog.com/project/80336/dashboard/2156042) ran without warnings.
 - The GeoIP transformation remains disabled. Post-disable event inspection found zero GeoIP, identified-user, current-URL, referrer, session-ID, form-content, or campaign values.
+- On 2026-11-16, the user explicitly approved privacy-sanitized Web Analytics after the built-in weekly digest remained empty without `$pageview`. Production now emits `$pageview` and `$pageleave` while general autocapture, persistent browser storage, person profiles, surveys, experiments, and session recording remain disabled. Page URLs are reduced to origin and pathname, referrers are reduced to origin only, and query strings, fragments, campaign parameters, form values, and free-form text remain excluded. This decision supersedes the original no-pageview/no-pageleave constraint for future releases without changing the seven custom outcome events.
 - Deployed Playwright and Lighthouse runs blocked PostHog endpoints; acceptance automation emitted no production analytics events.
 
 #### Verification completed
