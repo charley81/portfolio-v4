@@ -52,6 +52,128 @@ const failureReasons = [
   'unknown',
 ] as const satisfies readonly FormFailureReason[];
 
+const commonAllowedProperties = new Set([
+  '$device_id',
+  '$insert_id',
+  '$is_identified',
+  '$lib',
+  '$lib_version',
+  '$process_person_profile',
+  '$time',
+  'destination',
+  'distinct_id',
+  'location',
+  'method',
+  'project',
+  'reason',
+  'token',
+]);
+const webAnalyticsAllowedProperties = new Set([
+  '$browser',
+  '$browser_version',
+  '$current_url',
+  '$device',
+  '$device_type',
+  '$host',
+  '$os',
+  '$os_version',
+  '$pageview_id',
+  '$pathname',
+  '$prev_pageview_duration',
+  '$prev_pageview_id',
+  '$prev_pageview_last_content',
+  '$prev_pageview_last_content_percentage',
+  '$prev_pageview_last_scroll',
+  '$prev_pageview_last_scroll_percentage',
+  '$prev_pageview_max_content',
+  '$prev_pageview_max_content_percentage',
+  '$prev_pageview_max_scroll',
+  '$prev_pageview_max_scroll_percentage',
+  '$prev_pageview_pathname',
+  '$referrer',
+  '$referring_domain',
+  '$screen_height',
+  '$screen_width',
+  '$session_id',
+  '$timezone',
+  '$timezone_offset',
+  '$viewport_height',
+  '$viewport_width',
+  '$window_id',
+]);
+const webAnalyticsEvents = new Set(['$pageview', '$pageleave']);
+
+const sanitizeUrl = (value: unknown) => {
+  if (typeof value !== 'string' || value.length === 0) return undefined;
+
+  try {
+    const url = new URL(value, window.location.origin);
+    return {
+      host: url.host,
+      origin: url.origin,
+      pathname: url.pathname,
+      url: `${url.origin}${url.pathname}`,
+    };
+  } catch {
+    return undefined;
+  }
+};
+
+const sanitizePathname = (value: unknown) => {
+  if (typeof value !== 'string' || value.length === 0) return undefined;
+
+  try {
+    return new URL(value, window.location.origin).pathname;
+  } catch {
+    return value.split(/[?#]/, 1)[0] || undefined;
+  }
+};
+
+const sanitizeProperties = (
+  eventName: string,
+  eventProperties: Record<string, unknown>,
+) => {
+  const isWebAnalyticsEvent = webAnalyticsEvents.has(eventName);
+  const properties = Object.fromEntries(
+    Object.entries(eventProperties).filter(
+      ([property]) =>
+        commonAllowedProperties.has(property) ||
+        (isWebAnalyticsEvent && webAnalyticsAllowedProperties.has(property)),
+    ),
+  );
+
+  if (!isWebAnalyticsEvent) return properties;
+
+  const currentUrl = sanitizeUrl(properties.$current_url);
+  if (currentUrl) {
+    properties.$current_url = currentUrl.url;
+    properties.$host = currentUrl.host;
+    properties.$pathname = currentUrl.pathname;
+  } else {
+    delete properties.$current_url;
+    delete properties.$host;
+    delete properties.$pathname;
+  }
+
+  const referrer = sanitizeUrl(properties.$referrer);
+  if (referrer) {
+    properties.$referrer = referrer.origin;
+    properties.$referring_domain = referrer.host;
+  } else {
+    delete properties.$referrer;
+    delete properties.$referring_domain;
+  }
+
+  const previousPathname = sanitizePathname(properties.$prev_pageview_pathname);
+  if (previousPathname) {
+    properties.$prev_pageview_pathname = previousPathname;
+  } else {
+    delete properties.$prev_pageview_pathname;
+  }
+
+  return properties;
+};
+
 const isOneOf = <Value extends string>(
   value: string | undefined,
   allowed: readonly Value[],
@@ -67,8 +189,8 @@ const configureAnalytics = (key: string, host: string) => {
   posthog.init(key, {
     api_host: host,
     autocapture: false,
-    capture_pageview: false,
-    capture_pageleave: false,
+    capture_pageview: true,
+    capture_pageleave: true,
     capture_exceptions: false,
     disable_compression: true,
     disable_session_recording: true,
@@ -83,33 +205,14 @@ const configureAnalytics = (key: string, host: string) => {
     loaded: (client) => client.capture('portfolio_viewed'),
     request_batching: false,
     save_campaign_params: false,
-    save_referrer: false,
+    save_referrer: true,
     before_send: (event) => {
       if (!event?.properties) return event;
 
-      const allowedProperties = new Set([
-        '$device_id',
-        '$insert_id',
-        '$is_identified',
-        '$lib',
-        '$lib_version',
-        '$process_person_profile',
-        '$time',
-        'destination',
-        'distinct_id',
-        'location',
-        'method',
-        'project',
-        'reason',
-        'token',
-      ]);
-      const properties = Object.fromEntries(
-        Object.entries(event.properties).filter(([property]) =>
-          allowedProperties.has(property),
-        ),
-      );
-
-      return { ...event, properties };
+      return {
+        ...event,
+        properties: sanitizeProperties(event.event, event.properties),
+      };
     },
   });
 

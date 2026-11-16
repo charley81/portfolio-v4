@@ -26,6 +26,8 @@ PUBLIC_POSTHOG_HOST=
 
 Analytics is included only when Astro is building for production, Netlify sets `CONTEXT=production`, and both public PostHog values are present. Development and deploy previews remain silent.
 
+Production sends the approved portfolio outcome events plus `$pageview` and `$pageleave` for PostHog Web Analytics. General autocapture, person profiles, persistent browser storage, surveys, experiments, and session recording remain disabled. Page URLs are reduced to origin and pathname, while referrers are reduced to origin only, so query strings and fragments are never included; custom portfolio events continue to use the narrower property allowlist.
+
 ## Commands
 
 | Command               | Purpose                                                   |
